@@ -15,7 +15,7 @@
     "@babel/parser": "^8.0.4",
     "@babel/preset-react": "^8.0.1",
     "@aws-sdk/client-s3": "^3.600.0",
-    "@libsql/client": "^0.17.4",
+    "@libsql/client": "^0.18.0",
     "@supabase/supabase-js": "^2.45.0",
     "@vercel/blob": "^2.8.0",
     "bcryptjs": "^3.0.3",
