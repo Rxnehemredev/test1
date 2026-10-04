@@ -22,7 +22,7 @@
     "cheerio": "^1.2.0",
     "firebase": "^12.16.0",
     "jsonwebtoken": "^9.0.3",
-    "multer": "^2.1.0",
+    "multer": "^2.4.0",
     "next": "15.5.19",
     "otplib": "^12.0.1",
     "react": "19.2.3",
