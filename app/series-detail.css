@@ -1,0 +1,842 @@
+/* =========================================================================
+   SERIES DETAIL PAGE DESIGNS (appSettings.series_detail_design)
+   
+   IMPORTANT: globals.css defines base .sd-header as display:grid with
+   grid-template-columns: 210px 1fr. Each design MUST override this to
+   display:block since we now use .sd-header-content for flex layout.
+   Also, .sd-cover-wrap base has max-width:210px that must be overridden.
+   
+   - detail-style1: Klasik Parallax (cilalanmış)
+   - detail-style2: Cam Kapsül (Glass Capsule)
+   - detail-style3: Sinematik Geniş (Netflix Style)
+   - detail-style4: Siberpunk Neon
+   - detail-style5: Minimalist Estetik
+========================================================================= */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SHARED OVERRIDES — Applied to ALL detail-style* variants
+   These reset the base grid layout and cover constraints from globals.css
+═══════════════════════════════════════════════════════════════ */
+
+[class*="detail-style"] .sd-header {
+  display: block !important;
+  grid-template-columns: none !important;
+  margin-top: 0;
+}
+
+[class*="detail-style"] .sd-cover-wrap {
+  max-width: none !important;
+}
+
+[class*="detail-style"] .sd-cover-col::before {
+  display: none !important; /* Remove the accent glow from base */
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   1. KLASİK PARALLAX (Cilalanmış Mevcut Görünüm)
+═══════════════════════════════════════════════════════════════ */
+
+.detail-style1 .sd-parallax-wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  height: 450px;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+.detail-style1 .sd-parallax-banner {
+  width: 100%;
+  height: 120%;
+  background-size: cover;
+  background-position: center 20%;
+  background-attachment: scroll;
+  filter: blur(15px) brightness(0.4);
+  transform: scale(1.1);
+}
+.detail-style1 .sd-parallax-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15, 15, 15, 0.2) 0%, #0f0f0f 100%);
+}
+
+.detail-style1 .sd-header {
+  position: relative;
+  z-index: 2;
+  padding: 60px 0 0;
+}
+.detail-style1 .sd-header-content {
+  display: flex;
+  gap: 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  align-items: flex-start;
+}
+
+.detail-style1 .sd-cover-col {
+  position: relative;
+  flex-shrink: 0;
+  width: 260px;
+  margin-top: 0;
+}
+
+.detail-style1 .sd-cover-col {
+  flex-shrink: 0;
+  width: 260px;
+}
+.detail-style1 .sd-cover-wrap {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  background: #1a1a1a;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+}
+.detail-style1 .sd-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detail-style1 .sd-info-col {
+  flex-grow: 1;
+  min-width: 0;
+  padding-bottom: 20px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   2. CAM KAPSÜL (Glass Capsule)
+═══════════════════════════════════════════════════════════════ */
+
+.detail-style2 .sd-parallax-wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  height: 600px;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+.detail-style2 .sd-parallax-banner {
+  width: 100%;
+  height: 120%;
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll;
+  filter: blur(40px) brightness(0.6);
+  transform: scale(1.2);
+}
+.detail-style2 .sd-parallax-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15,15,15,0) 0%, rgba(15,15,15,0.8) 80%, #0f0f0f 100%);
+}
+
+.detail-style2 .sd-header {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  width: 100%;
+  margin: 60px auto 40px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.04);
+  /* blur değeri düşürüldü: 20px → 10px — görsel etki korunur, maliyet yarıya iner */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  /* GPU katmanına al */
+  transform: translateZ(0);
+  contain: layout style;
+}
+.detail-style2 .sd-header-content {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+}
+
+.detail-style2 .sd-cover-col {
+  width: 240px;
+  flex-shrink: 0;
+}
+.detail-style2 .sd-cover-wrap {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.detail-style2 .sd-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detail-style2 .sd-info-col {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   3. SİNEMATİK GENİŞ EKRAN (Netflix Style)
+═══════════════════════════════════════════════════════════════ */
+
+.detail-style3 .sd-parallax-wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  height: 650px;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+.detail-style3 .sd-parallax-banner {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: top center;
+  background-attachment: scroll;
+  filter: brightness(0.4);
+  transform: scale(1.05);
+}
+.detail-style3 .sd-parallax-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(90deg, #0f0f0f 0%, rgba(15,15,15,0.7) 45%, rgba(15,15,15,0) 100%),
+    linear-gradient(0deg, #0f0f0f 0%, rgba(15,15,15,0.5) 20%, rgba(15,15,15,0) 100%);
+}
+
+.detail-style3 .sd-header {
+  position: relative;
+  z-index: 2;
+  padding: 80px 0 60px;
+  min-height: 500px;
+  display: flex !important;
+  align-items: center;
+}
+
+.detail-style3 .sd-header-content {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.detail-style3 .sd-cover-col {
+  width: 280px;
+  flex-shrink: 0;
+}
+.detail-style3 .sd-cover-wrap {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.detail-style3 .sd-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detail-style3 .sd-info-col {
+  flex: 1;
+  max-width: 800px;
+  min-width: 0;
+}
+.detail-style3 .sd-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  margin-bottom: 20px;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   4. SİBERPUNK NEON
+═══════════════════════════════════════════════════════════════ */
+
+.detail-style4 .sd-parallax-wrapper {
+  display: none;
+}
+.detail-style4.sd-page {
+  background: #09090b;
+}
+.detail-style4.sd-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 800px;
+  transform: translateX(-50%);
+  background-image: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb, 94, 114, 228), 0.15) 0%, transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.detail-style4 .sd-header {
+  position: relative;
+  z-index: 2;
+  padding: 80px 0 40px;
+}
+.detail-style4 .sd-header-content {
+  display: flex;
+  gap: 40px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  align-items: stretch;
+}
+
+.detail-style4 .sd-cover-col {
+  width: 300px;
+  flex-shrink: 0;
+  position: relative;
+}
+.detail-style4 .sd-cover-wrap {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 20px rgba(var(--accent-rgb, 94, 114, 228), 0.4),
+              inset 0 0 20px rgba(var(--accent-rgb, 94, 114, 228), 0.4);
+  padding: 8px;
+  background: #000;
+  border-radius: 0;
+  transform: skewY(-2deg);
+  overflow: hidden;
+}
+.detail-style4 .sd-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.1) saturate(1.2);
+}
+.detail-style4 .sd-info-col {
+  flex-grow: 1;
+  min-width: 0;
+  padding: 20px;
+  background: linear-gradient(90deg, rgba(var(--accent-rgb, 94, 114, 228), 0.05), transparent);
+  border-left: 4px solid var(--accent);
+}
+.detail-style4 .sd-title {
+  font-family: monospace;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 10px var(--accent);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   5. MİNİMALİST ESTETİK (Clean & Focus)
+═══════════════════════════════════════════════════════════════ */
+
+.detail-style5 .sd-parallax-wrapper {
+  display: none;
+}
+.detail-style5.sd-page {
+  background: #111;
+  color: #eee;
+}
+
+.detail-style5 .sd-header {
+  position: relative;
+  z-index: 2;
+  padding: 80px 0 40px;
+}
+.detail-style5 .sd-header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.detail-style5 .sd-cover-col {
+  width: 200px;
+  margin-bottom: 30px;
+}
+.detail-style5 .sd-cover-wrap {
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.detail-style5 .sd-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detail-style5 .sd-info-col {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.detail-style5 .sd-title {
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  font-size: 2.5rem;
+}
+.detail-style5 .sd-actions {
+  justify-content: center;
+}
+.detail-style5 .sd-meta-grid {
+  width: 100%;
+  max-width: 500px;
+}
+.detail-style5 .sd-genres {
+  justify-content: center;
+}
+.detail-style5 .sd-bottom-actions {
+  justify-content: center;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE OVERRIDES FOR ALL DESIGNS
+═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Flex to column on mobile for all horizontal layouts */
+  .detail-style1 .sd-header-content,
+  .detail-style2 .sd-header-content,
+  .detail-style4 .sd-header-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .detail-style1 .sd-cover-col,
+  .detail-style2 .sd-cover-col,
+  .detail-style4 .sd-cover-col {
+    width: 200px;
+  }
+
+  /* Netflix style */
+  .detail-style3 .sd-header {
+    height: auto;
+    min-height: auto;
+    padding: 60px 0 40px;
+  }
+  .detail-style3 .sd-header-content {
+    flex-direction: column;
+    padding: 0;
+    text-align: center;
+  }
+  .detail-style3 .sd-cover-col {
+    width: 200px;
+  }
+  .detail-style3 .sd-title {
+    font-size: 2.2rem;
+  }
+  .detail-style3 .sd-parallax-overlay {
+    background: linear-gradient(to bottom, rgba(15,15,15,0.6) 0%, #0f0f0f 100%);
+  }
+
+  /* Cyberpunk — remove skew on mobile */
+  .detail-style4 .sd-cover-wrap {
+    transform: none;
+  }
+  .detail-style4 .sd-info-col {
+    border-left: none;
+    border-top: 4px solid var(--accent);
+  }
+
+  /* Override globals.css responsive grid rules */
+  [class*="detail-style"] .sd-header {
+    grid-template-columns: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* Override globals.css 560px breakpoint grid */
+  [class*="detail-style"] .sd-header {
+    grid-template-columns: none !important;
+  }
+  [class*="detail-style"] .sd-cover-wrap {
+    max-width: none !important;
+    margin: 0 !important;
+  }
+}
+
+/* =========================================================
+   USER RATING WIDGET — .sd-user-rating-wrap
+========================================================= */
+.sd-user-rating-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+.sd-user-rating-wrap:hover {
+  border-color: rgba(245,158,11,0.25);
+}
+.sd-user-rating-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.sd-star-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.sd-star-btn {
+  background: none;
+  border: none;
+  padding: 3px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.18);
+  transition: color 0.15s, transform 0.15s;
+  line-height: 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sd-star-btn:hover,
+.sd-star-btn.active {
+  color: #f59e0b;
+}
+.sd-star-btn:hover {
+  transform: scale(1.2);
+}
+.sd-star-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.sd-rating-msg {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--success, #34d399);
+  margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+  .sd-star-btn svg { width: 15px; height: 15px; }
+  .sd-star-row { gap: 2px; }
+  .sd-user-rating-wrap { padding: 10px 12px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   TAM SAYFA SABİT ARKA PLAN (sd_fullpage_bg admin toggle ile açılır)
+   Kapak görseli tüm sayfayı kaplar, kaydırmada sabit kalır (fixed).
+   Her tasarım stiliyle uyumlu çalışır.
+═══════════════════════════════════════════════════════════════ */
+
+/* Sabit arka plan dış çerçeve */
+.sd-fullpage-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* İç div: görsel burada, blur+scale burada — dış div taşmayı keser */
+.sd-fullpage-bg-layer-inner {
+  position: absolute;
+  inset: -60px;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  filter: blur(var(--sd-bg-blur, 24px));
+  transform: scale(1.15);
+  transform-origin: center;
+}
+
+/* Arka plan görselinin üstüne karanlık örtü */
+.sd-fullpage-bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, var(--sd-bg-overlay-opacity, 0.72));
+  pointer-events: none;
+}
+
+/* Tam sayfa arka plan aktifken parallax wrapper'ı gizle (üst üste binmesin) */
+.sd-has-fullpage-bg .sd-parallax-wrapper {
+  display: none !important;
+}
+
+/* Tam sayfa arka plan aktifken sayfa container'ı şeffaf yap */
+.sd-has-fullpage-bg {
+  background: transparent !important;
+}
+
+/* Tasarım stillerine göre arka plan renkleri de şeffaflaştır */
+.sd-has-fullpage-bg.detail-style4.sd-page,
+.sd-has-fullpage-bg.detail-style5.sd-page {
+  background: transparent !important;
+}
+.sd-has-fullpage-bg.detail-style4.sd-page::before {
+  display: none;
+}
+
+/* Mobilde performans için blur değerini azalt */
+@media (max-width: 768px) {
+  .sd-fullpage-bg-layer-inner {
+    filter: blur(calc(var(--sd-bg-blur, 24px) * 0.7));
+  }
+}
+
+/* =========================================================================
+   NEO STATS CARD — Glassmorphism yeniden tasarım
+   ========================================================================= */
+.neo-stats-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    /* backdrop-filter tek bir kart olduğu için kabul edilebilir, değer düşürüldü */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin: 16px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    /* GPU katmanına al */
+    transform: translateZ(0);
+    contain: layout style;
+}
+/* İnce renkli üst kenar çizgisi */
+.neo-stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb, 139, 92, 246), 0.6), transparent);
+    pointer-events: none;
+}
+
+.neo-rating-block {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.neo-rating-score {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(var(--accent-rgb, 139, 92, 246), 0.5);
+    letter-spacing: -1px;
+}
+.neo-rating-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.neo-stars-display {
+    display: flex;
+    gap: 3px;
+    color: #f59e0b;
+}
+.neo-stars-display svg { width: 14px; height: 14px; }
+.neo-votes-text {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.neo-metrics-block {
+    display: flex;
+    gap: 10px;
+}
+.neo-metric {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 8px 14px;
+    border-radius: 12px;
+    /* backdrop-filter kaldırıldı — her metric için stacking context açıyor */
+    transition: background 0.2s, border-color 0.2s;
+}
+.neo-metric:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+.neo-metric-icon {
+    display: flex;
+    align-items: center;
+}
+.neo-metric-icon svg { width: 16px; height: 16px; }
+.neo-metric-icon.chapters { color: #a78bfa; }
+.neo-metric-icon.views { color: #34d399; }
+.neo-metric-val {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #fff;
+}
+.neo-metric-lbl {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 2px;
+}
+
+/* 5 Yıldız etkileşimli puanlama */
+.neo-interactive-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(245, 158, 11, 0.07);
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    /* backdrop-filter kaldırıldı */
+    transition: border-color 0.2s, background 0.2s;
+}
+.neo-interactive-rating:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.1);
+}
+.neo-ir-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.neo-ir-stars {
+    display: flex;
+    gap: 3px;
+}
+.neo-ir-star-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    transition: transform 0.15s, filter 0.15s;
+    opacity: 0.45;
+    line-height: 0;
+}
+.neo-ir-star-btn:hover {
+    opacity: 0.85;
+    transform: scale(1.25);
+}
+.neo-ir-star-btn.active {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.7));
+    transform: scale(1.15);
+}
+.neo-ir-star-btn svg { width: 20px; height: 20px; }
+
+@media (max-width: 650px) {
+    .neo-stats-card {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 14px;
+        gap: 12px;
+        border-radius: 14px;
+    }
+    .neo-metrics-block {
+        justify-content: space-between;
+    }
+    .neo-metric { flex: 1; justify-content: center; }
+    .neo-interactive-rating {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
+@media (max-width: 400px) {
+    .neo-ir-star-btn svg { width: 22px; height: 22px; }
+    .neo-rating-score { font-size: 2rem; }
+}
+
+/* =========================================================================
+   SD GENRES NEW (tag list on series detail)
+   ========================================================================= */
+.sd-genres-new {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.sd-genre-tag-new {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.06);
+    /* backdrop-filter kaldırıldı — her genre tag için stacking context çok pahalı */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.7rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    /* "all" yerine sadece değişen özellikler — GPU maliyetini düşürür */
+    transition: background 0.25s, border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.sd-genre-tag-new:hover {
+    background: rgba(94, 114, 228, 0.2);
+    border-color: rgba(94, 114, 228, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(94, 114, 228, 0.3);
+    color: #fff;
+}
+.sd-genre-tag-new span {
+    color: #8b5cf6;
+    margin-right: 3px;
+    font-weight: 800;
+    opacity: 0.8;
+}
+@media (max-width: 768px) {
+    .sd-genres-new {
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+    .sd-genre-tag-new {
+        padding: 2px 8px;
+        font-size: 0.6rem;
+        border-radius: 8px;
+    }
+}

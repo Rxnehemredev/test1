@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/blog-queue?batch=1",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/scraper-sync",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

@@ -1,0 +1,486 @@
+/* =========================================
+   TRENDING WIDGET STYLES
+========================================= */
+
+/* Base Container for all trend lists */
+.trend-list-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 10px 4px 20px 4px;
+  /* scroll-snap kaldırıldı — otomatik kaydırma animasyonuyla çakışıyordu */
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+.trend-list-container::-webkit-scrollbar {
+  height: 6px;
+}
+.trend-list-container::-webkit-scrollbar-thumb {
+  background: rgba(var(--accent-rgb, 94, 114, 228), 0.3);
+  border-radius: 10px;
+}
+
+/* =========================================
+   1. Klasik (Mevcut Görünüm / trending-card)
+   (Bu aslında globals.css içinde tanımlı, aynen kullanılacak)
+========================================= */
+
+/* =========================================
+   2. Neon Yansıma (Neon Glow)
+========================================= */
+.trend-neon-card {
+
+  min-width: 140px;
+  flex: 0 0 140px;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  position: relative;
+  background: #111115;
+  border-radius: var(--radius-lg);
+  overflow: visible;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.trend-neon-card::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 10%;
+  width: 80%;
+  height: 20px;
+  background: var(--accent);
+  filter: blur(14px);
+  opacity: 0.3;
+  z-index: -1;
+  transition: opacity 0.4s, background 0.4s;
+  border-radius: 50%;
+}
+.trend-neon-card:hover {
+  transform: translateY(-8px);
+}
+.trend-neon-card:hover::after {
+  opacity: 0.8;
+  filter: blur(18px);
+  background: #0ff; /* Neon cyan on hover */
+}
+.tn-cover {
+  width: 100%;
+  height: 190px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.tn-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+.trend-neon-card:hover .tn-cover img {
+  transform: scale(1.08);
+}
+.tn-rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  background: rgba(0,0,0,0.8);
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #fff;
+  font-size: 0.85rem;
+  box-shadow: 0 0 10px var(--accent);
+  z-index: 2;
+  transition: all 0.3s;
+  backdrop-filter: blur(4px);
+}
+.trend-neon-card:hover .tn-rank {
+  border-color: #0ff;
+  color: #0ff;
+  box-shadow: 0 0 15px #0ff;
+  text-shadow: 0 0 5px #0ff;
+}
+.tn-info {
+  padding: 12px 8px;
+  text-align: center;
+  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+.tn-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+}
+
+/* =========================================
+   3. Geniş Pankart (Horizontal Banners)
+========================================= */
+.trend-banner-card {
+
+  min-width: 290px;
+  flex: 0 0 290px;
+  height: 115px;
+  display: flex;
+  background: rgba(25, 25, 30, 0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s;
+}
+.trend-banner-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #ff007f);
+  transition: width 0.4s ease-out;
+}
+.trend-banner-card:hover {
+  background: rgba(35, 35, 45, 0.8);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-4px);
+}
+.trend-banner-card:hover::before {
+  width: 100%;
+}
+.tb-cover {
+  width: 85px;
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+}
+.tb-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tb-rank {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(0,0,0,0.8);
+  color: var(--accent);
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border-top-left-radius: 6px;
+}
+.tb-info {
+  padding: 12px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tb-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.tb-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: auto;
+}
+.tb-meta-rating {
+  color: var(--warning);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.tb-genres {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   4. Cam Küp 3D (Glass 3D)
+========================================= */
+.trend-glass3d-container {
+  perspective: 1000px;
+  min-width: 150px;
+  flex: 0 0 150px;
+}
+.trend-glass3d-card {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  position: relative;
+  text-decoration: none !important;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  /* CLS önlemi: sabit yükseklik görsel yüklenmeden alanı korur */
+  contain: layout style;
+}
+.trend-glass3d-card:hover {
+  transform: rotateX(8deg) rotateY(-8deg) scale(1.05);
+}
+.tg-bg {
+  position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  background: #111;
+  line-height: 0;
+  font-size: 0;
+}
+.tg-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  transition: filter 0.4s, transform 0.4s;
+  vertical-align: top;
+}
+.trend-glass3d-card:hover .tg-bg img {
+  filter: brightness(0.55) blur(1px);
+  transform: scale(1.05);
+}
+.tg-overlay {
+  position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.95) 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px 10px;
+}
+.tg-rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 5;
+}
+.tg-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.95);
+  /* Uzun isimleri kırp — 2 satır */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+  max-height: 2.6em;
+  word-break: break-word;
+  opacity: 1;
+  transform: translateY(0);
+  transition: none;
+  z-index: 5;
+  position: relative;
+}
+.trend-glass3d-card:hover .tg-title {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* =========================================
+   5. Alevli Yükseliş (Flaming Rise)
+========================================= */
+.trend-flame-card {
+
+  min-width: 145px;
+  flex: 0 0 145px;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.trend-flame-card:hover {
+  transform: translateY(-12px);
+}
+.tf-cover-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  padding: 2px; /* Border thickness */
+  background: #333;
+  transition: background 0.4s;
+  overflow: hidden;
+}
+.trend-flame-card:hover .tf-cover-wrapper {
+  background: linear-gradient(180deg, #ff4500, #ff8c00, #ffd700);
+  animation: flameBorder 2s linear infinite;
+}
+@keyframes flameBorder {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(30deg); }
+}
+.tf-cover {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  background: #111;
+  overflow: hidden;
+  position: relative;
+}
+.tf-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+.trend-flame-card:hover .tf-cover img {
+  opacity: 1;
+}
+.tf-rank {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, #ff4500, #ff8c00);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1rem;
+  padding: 4px 10px;
+  border-bottom-right-radius: 12px;
+  box-shadow: 2px 2px 10px rgba(255, 69, 0, 0.5);
+  transition: all 0.3s;
+}
+.trend-flame-card:hover .tf-rank {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+}
+.tf-info {
+  margin-top: 8px;
+  text-align: center;
+}
+.tf-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile Responsiveness for Flaming Rise */
+@media (max-width: 768px) {
+  .tf-cover-wrapper {
+    background: linear-gradient(180deg, #ff4500, #ff8c00, #ffd700);
+    animation: flameBorder 3s linear infinite;
+  }
+}
+
+/* =========================================
+   CSS MARQUEE (SONSUZ KAYDIRMA - TAKILMASIZ)
+========================================= */
+.trend-marquee-outer {
+  overflow: hidden;
+  padding: 10px 0 20px 0;
+  /* Kenar fade efekti */
+  mask-image: linear-gradient(to right, transparent 0%, black 40px, black calc(100% - 40px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 40px, black calc(100% - 40px), transparent 100%);
+}
+
+.trend-marquee-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  animation: trend-marquee-scroll linear infinite;
+  will-change: transform;
+}
+
+@keyframes trend-marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* =========================================
+   OTOMATİK KAYDIRMA BUTONU
+========================================= */
+.trend-autoscroll-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.trend-autoscroll-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.trend-autoscroll-btn.active {
+  color: var(--accent-light, #93c5fd);
+  background: rgba(var(--accent-rgb, 94, 114, 228), 0.12);
+  border-color: rgba(var(--accent-rgb, 94, 114, 228), 0.3);
+}
+
+@media (max-width: 768px) {
+  .trend-autoscroll-btn {
+    padding: 5px 8px;
+    border-radius: 50%;
+    gap: 0;
+  }
+  .trend-autoscroll-btn svg {
+    width: 11px;
+    height: 11px;
+  }
+  /* Mobilde sadece ikon göster */
+  .trend-autoscroll-label {
+    display: none;
+  }
+}

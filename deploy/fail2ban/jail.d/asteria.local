@@ -1,0 +1,59 @@
+# /etc/fail2ban/jail.d/asteria.local
+# Önce:  sudo cp deploy/fail2ban/filter.d/*.conf /etc/fail2ban/filter.d/
+#
+# Ban eylemi: nftables kullanıyorsan nftables-allports, iptables kullanıyorsan iptables-allports.
+# 'allports' = saldırgan sadece 443'e değil sunucuya HİÇ ulaşamaz.
+[DEFAULT]
+banaction = nftables-allports
+bantime.increment = true
+bantime.factor = 2
+bantime.maxtime = 4w
+ignoreip = 127.0.0.1/8 ::1
+# Kendi IP'ni buraya ekle ki yanlışlıkla kendini banlamayasın:
+# ignoreip = 127.0.0.1/8 ::1 SENIN.IP.ADRESIN
+
+# Uygulama (Threat Shield/WAF) logları — systemd servisi olarak çalışıyorsa.
+# Docker kullanıyorsan: backend = auto, logpath = /var/lib/docker/containers/*/*-json.log
+[asteria-shield]
+enabled  = true
+filter   = asteria-shield
+backend  = systemd
+journalmatch = _SYSTEMD_UNIT=asteria.service
+maxretry = 4
+findtime = 10m
+bantime  = 1h
+
+# nginx: hız sınırına takılanlar (limit_req 429) — nginx error.log'da "limiting requests"
+[nginx-limit-req]
+enabled  = true
+port     = http,https
+logpath  = /var/log/nginx/error.log
+maxretry = 15
+findtime = 2m
+bantime  = 30m
+
+# nginx: kısa sürede çok sayıda 4xx
+[asteria-nginx-flood]
+enabled  = true
+port     = http,https
+filter   = asteria-nginx-flood
+logpath  = /var/log/nginx/access.log
+maxretry = 40
+findtime = 1m
+bantime  = 1h
+
+# Tekrar suçlular: 1 gün içinde 3 kez banlananı bir hafta kes
+[recidive]
+enabled  = true
+logpath  = /var/log/fail2ban.log
+banaction = nftables-allports
+bantime  = 1w
+findtime = 1d
+maxretry = 3
+
+# SSH brute-force
+[sshd]
+enabled  = true
+maxretry = 4
+findtime = 10m
+bantime  = 2h

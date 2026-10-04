@@ -1,0 +1,35 @@
+# docker compose -f deploy/docker/docker-compose.yml --env-file /etc/asteria/asteria.env up -d --build
+# nginx HOST üzerinde çalışır (deploy/nginx/asteria.conf) ve 127.0.0.1:3000'e proxy yapar.
+services:
+  asteria:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL}
+    image: asteria:latest
+    restart: always
+    env_file: /etc/asteria/asteria.env
+    environment:
+      SELF_HOSTED: "1"
+      # Konteyner içinden kendi kendine istek (DDoS gate ayarı) → ağdan geçmeden:
+      INTERNAL_ORIGIN: "http://127.0.0.1:3000"
+    # YALNIZCA loopback'e yayınla — 0.0.0.0'a ASLA (Docker ufw'yu atlatır!)
+    ports:
+      - "127.0.0.1:3000:3000"
+    # ── Sertleştirme ─────────────────────────────────────────────────────────
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+      - /app/.next/cache:size=256m,noexec,nosuid,uid=10001,gid=10001
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    mem_limit: 1500m
+    cpus: 2.0
+    ulimits:
+      nofile: { soft: 16384, hard: 16384 }
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }

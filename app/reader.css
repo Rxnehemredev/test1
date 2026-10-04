@@ -1,0 +1,559 @@
+/* =========================================
+   READER APP STYLES (app/reader.css)
+========================================= */
+
+/* ── HUD (Heads-Up Display) Genel ── */
+.reader-hud {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: opacity 0.3s ease;
+}
+.reader-hud.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.reader-hud.visible {
+  opacity: 1;
+  /* pointer-events intentionally NOT set here — keep none on the wrapper so
+     clicks in the middle of the screen pass through to page content (comments etc).
+     Interactive child elements (topbar, bottombar, panel.open) each have their
+     own pointer-events: auto declarations. */
+  pointer-events: none;
+}
+
+/* ── HUD Top Bar — tanım .rh-title-group bloğunun altındaki yeni blokta ── */
+.reader-hud.visible .rh-topbar {
+  transform: translateY(0);
+}
+.rh-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0; /* allow truncation */
+  overflow: hidden;
+}
+.rh-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  min-width: 38px; /* prevent shrinking */
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: all 0.2s;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.rh-back-btn:hover {
+  background: var(--accent);
+  transform: scale(1.05);
+}
+/* Title text wrapper — truncate long names */
+.rh-title-text {
+  min-width: 0;
+  overflow: hidden;
+}
+.rh-series-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.rh-chapter-title {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Top bar — prevent overflow */
+.rh-topbar {
+  background: rgba(10, 10, 12, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: auto;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── HUD Bottom Bar ── */
+.rh-bottombar {
+  background: rgba(10, 10, 12, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: auto;
+}
+.reader-hud.visible .rh-bottombar {
+  transform: translateY(0);
+}
+.rh-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rh-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rh-btn:hover, .rh-btn.active {
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+}
+.rh-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.rh-chapter-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s;
+}
+.rh-chapter-selector:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* ── HUD Panels (Ayarlar & Bölümler) ── */
+.rh-panel {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 300px;
+  background: rgba(15, 15, 20, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  transform: translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 10000;
+}
+.rh-panel.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.rh-panel-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 8px;
+}
+.rh-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.rh-setting-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.rh-setting-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Mode Toggle Buttons */
+.rh-mode-toggle {
+  display: flex;
+  background: rgba(0,0,0,0.5);
+  border-radius: 8px;
+  padding: 4px;
+}
+.rh-mode-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rh-mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+/* Slider Input */
+.rh-slider {
+  -webkit-appearance: none;
+  width: 100px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  outline: none;
+}
+.rh-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+/* Chapter List Panel */
+.rh-chapter-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rh-chapter-item {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 10px 12px;
+  text-align: left;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rh-chapter-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+.rh-chapter-item.current {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb, 94, 114, 228), 0.1);
+}
+
+/* ── Manga Okuma Modu (Yatay) ── */
+.manga-mode-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: #000; /* Manga modu genelde simsiyah zemin kullanır */
+  position: relative;
+  overflow-x: hidden; /* Yatay scroll engelle; dikey içerik (yorumlar) görünsün */
+}
+.manga-viewport {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.manga-page-img {
+  max-width: 100%;
+  object-fit: contain;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Sağ-tık/sürükle koruması (bkz. components/ContentProtection.js) —
+     caydırıcıdır, kesin koruma değildir. */
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none; /* iOS: uzun basınca "resmi kaydet" menüsünü gizler */
+}
+
+/* Manga modunda (yatay okuma) sayfa viewport yüksekliğiyle sınırlandırılır */
+.manga-viewport .manga-page-img {
+  max-height: 100vh;
+}
+
+/* Webtoon modunda sayfalar tam genişlikte, yükseklik kısıtı OLMADAN gösterilmeli */
+.reader-container .manga-page-img {
+  max-height: none !important;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Webtoon Sayfa Görseli ──
+   Dikey okuma moduna özel class — max-height kısıtı yok, tam boy akış. */
+.webtoon-page-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+  /* Sağ-tık/sürükle koruması */
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.manga-nav-area {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  z-index: 10;
+  cursor: pointer;
+}
+.manga-nav-area.left { left: 0; }
+.manga-nav-area.right { right: 0; }
+.manga-nav-area.center { left: 30%; width: 40%; } /* Menüyü açmak için */
+
+/* ── Hata Placeholder ── */
+.reader-error-placeholder {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px dashed rgba(255, 0, 0, 0.3);
+  border-radius: 12px;
+  margin: 10px 0;
+}
+.reader-error-icon {
+  color: var(--danger);
+  margin-bottom: 12px;
+}
+
+/* ── Sıralı Sayfa Yükleme İskeleti ──
+   Webtoon modunda henüz sırası gelmemiş sayfalar için yer tutucu.
+   Tipik bir webtoon sayfası dar/uzun olduğundan yaklaşık bir en-boy oranı kullanılır. */
+.reader-page-skeleton {
+  aspect-ratio: 3 / 4;
+  min-height: 300px;
+  border-radius: 8px;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.04) 30%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 70%
+  );
+  background-size: 200% 100%;
+  animation: reader-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes reader-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Bölüm Sonu Kartı (Next Chapter) ── */
+/* Bölüm Sonu Kartı — kompakt ve modern tasarım */
+.reader-end-card {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 24px auto 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px 28px;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+.rec-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px) brightness(0.25);
+  z-index: 0;
+  transform: scale(1.12);
+}
+.rec-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.rec-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent-light, #93c5fd);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.rec-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.25;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  margin: 0 0 4px;
+}
+/* Ana eylem butonu (Sonraki Bölüm) */
+.rec-btn {
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 28px;
+  border-radius: 24px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s;
+  box-shadow: 0 6px 16px rgba(var(--accent-rgb, 94, 114, 228), 0.35);
+  margin-top: 6px;
+  cursor: pointer;
+  border: none;
+  min-width: 160px;
+}
+.rec-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(var(--accent-rgb, 94, 114, 228), 0.5);
+  opacity: 0.92;
+}
+
+/* Progress Bar */
+.hud-progress-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+}
+.hud-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  transition: width 0.1s linear;
+}
+
+@media (max-width: 768px) {
+  .rh-title-group { gap: 12px; }
+  .rh-series-title { font-size: 0.95rem; }
+  .rh-chapter-title { font-size: 0.75rem; }
+  .rh-bottombar {
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .rh-btn {
+    padding: 8px 10px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .rh-btn span { display: none; }
+  .rh-chapter-selector { 
+    padding: 8px 14px; 
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+  .rh-panel {
+    position: fixed !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    bottom: 90px !important;
+    top: auto !important;
+    max-height: 45vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 10001 !important;
+    border-radius: 16px 16px 0 0 !important;
+    background: rgba(15, 15, 20, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    transform: translateY(120%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease !important;
+  }
+  .rh-panel.open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  .rh-setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .rh-mode-toggle {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .rh-mode-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  .rh-setting-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .rh-slider {
+    flex: 1;
+    min-width: 80px;
+  }
+  .rec-title { font-size: 1.1rem; }
+  .reader-end-card { padding: 24px 16px 20px; border-radius: 14px; }
+  .rec-btn { padding: 9px 20px; font-size: 0.85rem; min-width: 140px; }
+}

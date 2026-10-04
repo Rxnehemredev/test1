@@ -1,0 +1,773 @@
+/* 
+  En Çok Okunanlar (Most Read) Tasarım Stilleri
+  Son güncelleme: 2025-06 — tasarım iyileştirmeleri
+*/
+
+/* =========================================
+   1. Klasik (Mevcut Görünüm / mr3-widget)
+   mr3-list, mr3-item, mr3-badge, mr3-cover, mr3-info sınıfları
+   globals.css içindeki temel stilleri genişletir.
+========================================= */
+.mr3-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mr3-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.mr3-item::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: 3px 0 0 3px;
+}
+.mr3-item:hover {
+  background: var(--bg-secondary);
+  border-color: rgba(var(--accent-rgb,94,114,228),0.25);
+  transform: translateX(4px);
+}
+.mr3-item:hover::before { opacity: 1; }
+.mr3-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.mr3-badge-1 { background: linear-gradient(135deg,#FFD700,#FF8C00); color: #000; box-shadow: 0 2px 8px rgba(255,215,0,0.4); }
+.mr3-badge-2 { background: linear-gradient(135deg,#C0C0C0,#808080); color: #fff; }
+.mr3-badge-3 { background: linear-gradient(135deg,#CD7F32,#8B4513); color: #fff; }
+.mr3-badge-4 { background: rgba(255,255,255,0.08); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.08); }
+.mr3-cover {
+  width: 48px;
+  height: 68px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.mr3-cover img { width: 100%; height: 100%; object-fit: cover; }
+.mr3-info { flex: 1; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.mr3-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr3-meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted); }
+
+/* =========================================
+   2. Kademeli Cam (Glass Steps)
+========================================= */
+.mr-glass-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mr-glass-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-lg, 12px);
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform: translateZ(0);
+  background: rgba(20, 20, 25, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.mr-glass-bg {
+  display: none;
+}
+.mr-glass-overlay {
+  display: none;
+}
+/* İlk item büyük tasarım */
+.mr-glass-list .mr-glass-item:nth-child(1) { 
+  margin-left: 0; 
+  padding: 0;
+  min-height: auto;
+}
+.mr-glass-list .mr-glass-item:nth-child(1) .mr-glass-content {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.mr-glass-list .mr-glass-item:nth-child(1) .mr-glass-cover {
+  order: 1;
+  width: 100%;
+  height: 200px;
+  border-radius: 12px 12px 0 0;
+  box-shadow: none;
+}
+.mr-glass-list .mr-glass-item:nth-child(1) .mr-glass-info {
+  order: 2;
+  padding: 16px;
+  gap: 8px;
+}
+.mr-glass-list .mr-glass-item:nth-child(1) .mr-glass-title {
+  font-size: 1.1rem;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Rank Styling */
+.mr-glass-list .mr-glass-item:nth-child(1) .mr-glass-rank { 
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #FFD700; 
+  font-size: 1.3rem; 
+  min-width: auto;
+}
+
+.mr-glass-list .mr-glass-item:nth-child(2) { margin-left: 0; }
+.mr-glass-list .mr-glass-item:nth-child(3) { margin-left: 0; }
+.mr-glass-list .mr-glass-item:nth-child(4) { margin-left: 0; }
+.mr-glass-list .mr-glass-item:nth-child(n+5) { margin-left: 0; }
+
+.mr-glass-list .mr-glass-item:nth-child(n+2) .mr-glass-content {
+  padding: 10px 12px;
+  min-height: 72px;
+}
+
+.mr-glass-item:hover {
+  transform: translateY(-3px) translateZ(0);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+.mr-glass-item:hover .mr-glass-bg {
+  opacity: 0.5;
+}
+.mr-glass-item:hover .mr-glass-overlay {
+  background: rgba(18, 18, 24, 0.35);
+  border-color: rgba(255,255,255,0.14);
+}
+.mr-glass-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.mr-glass-rank {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.14);
+  min-width: 28px;
+  text-align: center;
+  font-style: italic;
+  flex-shrink: 0;
+  transition: color 0.3s;
+  line-height: 1;
+}
+.mr-glass-item:hover .mr-glass-rank {
+  color: var(--accent);
+}
+/* Rank 2-3 özel renkler */
+.mr-glass-list .mr-glass-item:nth-child(2) .mr-glass-rank { color: rgba(192,192,192,0.6); font-size: 1.6rem; }
+.mr-glass-list .mr-glass-item:nth-child(3) .mr-glass-rank { color: rgba(205,127,50,0.6); font-size: 1.5rem; }
+.mr-glass-list .mr-glass-item:nth-child(2):hover .mr-glass-rank { color: #C0C0C0; }
+.mr-glass-list .mr-glass-item:nth-child(3):hover .mr-glass-rank { color: #CD7F32; }
+
+.mr-glass-cover {
+  width: 50px;
+  height: 70px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.mr-glass-item:hover .mr-glass-cover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+.mr-glass-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.mr-glass-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  min-width: 0;
+}
+.mr-glass-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  transition: color 0.2s;
+}
+.mr-glass-item:hover .mr-glass-title {
+  color: #fff;
+}
+.mr-glass-meta {
+  font-size: 0.73rem;
+  color: rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Glass Steps Mobil Responsive ── */
+@media (max-width: 480px) {
+  .mr-glass-list { gap: 8px; }
+  .mr-glass-item {
+    padding: 8px 10px;
+    border-radius: 10px;
+    /* kademeli girinti mobilde azalt */
+    min-height: 64px;
+  }
+  .mr-glass-list .mr-glass-item:nth-child(2) { margin-left: 0; }
+  .mr-glass-list .mr-glass-item:nth-child(3) { margin-left: 0; }
+  .mr-glass-list .mr-glass-item:nth-child(4) { margin-left: 0; }
+  .mr-glass-list .mr-glass-item:nth-child(n+5) { margin-left: 0; }
+  .mr-glass-rank { font-size: 1.4rem; min-width: 24px; }
+  .mr-glass-list .mr-glass-item:nth-child(1) .mr-glass-rank { font-size: 1.55rem; }
+  .mr-glass-list .mr-glass-item:nth-child(2) .mr-glass-rank { font-size: 1.45rem; }
+  .mr-glass-list .mr-glass-item:nth-child(3) .mr-glass-rank { font-size: 1.35rem; }
+  .mr-glass-cover { width: 44px; height: 62px; }
+  .mr-glass-title { font-size: 0.82rem; }
+  .mr-glass-meta { font-size: 0.68rem; }
+  /* Hover animasyonları mobilde devre dışı */
+  .mr-glass-item:hover { transform: none; box-shadow: none; }
+  .mr-glass-item:hover .mr-glass-cover { transform: none; }
+}
+
+@media (max-width: 360px) {
+  .mr-glass-item { gap: 8px; padding: 7px 8px; }
+  .mr-glass-cover { width: 40px; height: 56px; }
+  .mr-glass-title { font-size: 0.78rem; }
+}
+
+
+/* =========================================
+   3. Altın Taç (Golden Crown) — yeniden tasarım
+========================================= */
+.mr-crown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Temel kart — overflow:visible tacın kırpılmaması için zorunlu */
+.mr-crown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  position: relative;
+  overflow: visible; /* taç ikonunun kırpılmaması için */
+}
+
+/* Arka plan gradient kırpması için iç pseudo-element */
+.mr-crown-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Hover: hafif sağa kayma + gölge */
+.mr-crown-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* ── Rank 1 (Altın) ── */
+.mr-crown-item.rank-1 {
+  background: linear-gradient(120deg,
+    rgba(255,215,0,0.14) 0%,
+    rgba(255,180,0,0.07) 35%,
+    var(--bg-card) 70%);
+  border-color: rgba(255,215,0,0.45);
+  padding: 12px 14px;
+  box-shadow: 0 2px 12px rgba(255,215,0,0.08);
+}
+.mr-crown-item.rank-1:hover {
+  border-color: rgba(255,215,0,0.7);
+  box-shadow: 0 6px 24px rgba(255,215,0,0.18);
+}
+.mr-crown-item.rank-1 .mr-crown-cover {
+  width: 68px;
+  height: 96px;
+  border: 2px solid rgba(255,215,0,0.85);
+  box-shadow: 0 0 18px rgba(255,215,0,0.35), 0 4px 12px rgba(0,0,0,0.4);
+  border-radius: 6px;
+}
+.mr-crown-item.rank-1 .mr-crown-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255,215,0,0.35);
+}
+.mr-crown-item.rank-1 .mr-crown-rank-pill {
+  background: linear-gradient(135deg,#FFD700,#FF8C00);
+  color: #1a1200;
+  box-shadow: 0 2px 8px rgba(255,180,0,0.4);
+}
+
+/* ── Rank 2 (Gümüş) ── */
+.mr-crown-item.rank-2 {
+  background: linear-gradient(120deg,
+    rgba(200,200,200,0.1) 0%,
+    rgba(160,160,160,0.05) 40%,
+    var(--bg-card) 70%);
+  border-color: rgba(192,192,192,0.35);
+}
+.mr-crown-item.rank-2:hover {
+  border-color: rgba(220,220,220,0.6);
+  box-shadow: 0 6px 20px rgba(180,180,180,0.12);
+}
+.mr-crown-item.rank-2 .mr-crown-cover {
+  border: 2px solid rgba(192,192,192,0.7);
+  box-shadow: 0 0 10px rgba(180,180,180,0.2), 0 4px 10px rgba(0,0,0,0.3);
+  border-radius: 6px;
+}
+.mr-crown-item.rank-2 .mr-crown-title {
+  color: #d4d4d4;
+}
+.mr-crown-item.rank-2 .mr-crown-rank-pill {
+  background: linear-gradient(135deg,#C0C0C0,#808080);
+  color: #fff;
+}
+
+/* ── Rank 3 (Bronz) ── */
+.mr-crown-item.rank-3 {
+  background: linear-gradient(120deg,
+    rgba(205,127,50,0.1) 0%,
+    rgba(180,100,30,0.05) 40%,
+    var(--bg-card) 70%);
+  border-color: rgba(205,127,50,0.35);
+}
+.mr-crown-item.rank-3:hover {
+  border-color: rgba(205,127,50,0.65);
+  box-shadow: 0 6px 20px rgba(205,127,50,0.12);
+}
+.mr-crown-item.rank-3 .mr-crown-cover {
+  border: 2px solid rgba(205,127,50,0.7);
+  box-shadow: 0 0 10px rgba(205,127,50,0.2), 0 4px 10px rgba(0,0,0,0.3);
+  border-radius: 6px;
+}
+.mr-crown-item.rank-3 .mr-crown-title {
+  color: #d4955a;
+}
+.mr-crown-item.rank-3 .mr-crown-rank-pill {
+  background: linear-gradient(135deg,#CD7F32,#8B4513);
+  color: #fff;
+}
+
+/* ── Diğer sıralar ── */
+.mr-crown-item.rank-other .mr-crown-rank-pill {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Kapak resmi */
+.mr-crown-cover {
+  width: 50px;
+  height: 70px;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  z-index: 1;
+}
+.mr-crown-item:hover .mr-crown-cover {
+  transform: scale(1.04);
+}
+.mr-crown-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Taç & madalya ikonları — kart (overflow:visible) üzerinde konumlanır */
+.crown-icon,
+.medal-icon {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.crown-icon {
+  top: -2px;
+  left: 2px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.85)) drop-shadow(0 0 8px rgba(255,215,0,0.5));
+  transform: rotate(-22deg);
+  transition: transform 0.3s ease;
+  animation: crown-float 3s ease-in-out infinite;
+}
+.mr-crown-item:hover .crown-icon {
+  animation-play-state: paused;
+  transform: rotate(-18deg) scale(1.15) translateY(-2px);
+}
+@keyframes crown-float {
+  0%, 100% { transform: rotate(-22deg) translateY(0px); }
+  50%       { transform: rotate(-22deg) translateY(-3px); }
+}
+
+.medal-icon {
+  top: -4px;
+  left: 4px;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8));
+  transition: transform 0.25s ease;
+}
+.mr-crown-item:hover .medal-icon {
+  transform: scale(1.12) translateY(-2px);
+}
+
+/* Bilgi alanı */
+.mr-crown-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+.mr-crown-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+/* Rank pill — SVG ikon + numara yan yana */
+.mr-crown-rank-pill {
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+
+/* Rating (yıldız + puan) */
+.mr-crown-rating {
+  font-size: 0.72rem;
+  color: var(--warning);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Meta satırı (pill + rating) */
+.mr-crown-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Mobil Responsive ── */
+@media (max-width: 480px) {
+  .mr-crown-list { gap: 8px; }
+
+  .mr-crown-item {
+    padding: 8px 10px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+  .mr-crown-item.rank-1 { padding: 10px 12px; }
+
+  /* Rank 1 kapak mobilde biraz küçülür */
+  .mr-crown-item.rank-1 .mr-crown-cover {
+    width: 56px;
+    height: 78px;
+  }
+
+  .mr-crown-cover {
+    width: 44px;
+    height: 62px;
+    border-radius: 5px;
+  }
+
+  .mr-crown-title { font-size: 0.82rem; }
+  .mr-crown-item.rank-1 .mr-crown-title { font-size: 0.92rem; }
+
+  .mr-crown-rank-pill { font-size: 0.68rem; padding: 2px 6px; }
+  .mr-crown-rating { font-size: 0.68rem; }
+
+  /* Taç & madalya ikonları mobilde biraz küçülür */
+  .crown-icon { width: 20px; height: 20px; top: 0; left: 0; }
+  .medal-icon  { width: 17px; height: 17px; top: -2px; left: 2px; }
+
+  /* Hover animasyonlarını mobilde devre dışı bırak (performans) */
+  .mr-crown-item:hover { transform: none; }
+  .mr-crown-item:hover .mr-crown-cover { transform: none; }
+  .mr-crown-item:hover .crown-icon { animation-play-state: running; transform: rotate(-22deg); }
+  .mr-crown-item:hover .medal-icon  { transform: none; }
+}
+
+@media (max-width: 360px) {
+  .mr-crown-item { gap: 8px; padding: 7px 8px; }
+  .mr-crown-cover { width: 40px; height: 56px; }
+  .mr-crown-item.rank-1 .mr-crown-cover { width: 48px; height: 68px; }
+  .mr-crown-title { font-size: 0.78rem; }
+  .mr-crown-item.rank-1 .mr-crown-title { font-size: 0.85rem; }
+  .crown-icon { width: 18px; height: 18px; }
+  .medal-icon  { width: 15px; height: 15px; }
+}
+
+/* =========================================
+   4. Siberpunk Neon (Cyberpunk)
+========================================= */
+.mr-cyber-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.mr-cyber-item {
+  display: flex;
+  align-items: center;
+  background: #0d0d12;
+  text-decoration: none;
+  position: relative;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  border-left: 3px solid var(--accent);
+  transition: all 0.2s;
+}
+.mr-cyber-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(var(--accent-rgb, 239, 68, 68), 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.mr-cyber-item:hover {
+  border-left-color: #0ff;
+  transform: translateX(4px);
+}
+.mr-cyber-item:hover::before {
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.15) 0%, transparent 100%);
+}
+.mr-cyber-rank {
+  font-size: 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+  padding: 0 16px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s;
+}
+.mr-cyber-item:hover .mr-cyber-rank {
+  -webkit-text-stroke: 1px #0ff;
+  color: #0ff;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+}
+.mr-cyber-cover {
+  width: 55px;
+  height: 55px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.mr-cyber-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(30%) contrast(120%);
+  transition: all 0.3s;
+}
+.mr-cyber-item:hover .mr-cyber-cover img {
+  filter: grayscale(0%) contrast(100%);
+}
+.mr-cyber-info {
+  flex: 1;
+  padding: 10px 14px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+.mr-cyber-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mr-cyber-meta {
+  font-size: 0.7rem;
+  color: #0ff;
+  font-family: 'Courier New', monospace;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+/* =========================================
+   5. Anime Minimalist (Hover Reveal)
+========================================= */
+.mr-anime-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mr-anime-item {
+  position: relative;
+  height: 65px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s;
+  display: flex;
+  align-items: flex-end;
+  will-change: height, box-shadow;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.mr-anime-item:hover {
+  height: 150px;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+}
+.mr-anime-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 25%;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 0;
+}
+.mr-anime-item:hover .mr-anime-bg {
+  transform: scale(1.05);
+}
+.mr-anime-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%);
+  z-index: 1;
+}
+.mr-anime-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mr-anime-info {
+  flex: 1;
+  overflow: hidden;
+}
+.mr-anime-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+  transform: translateY(4px);
+  transition: transform 0.4s;
+}
+.mr-anime-item:hover .mr-anime-title {
+  transform: translateY(0);
+}
+.mr-anime-meta {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s;
+  margin-top: 4px;
+}
+.mr-anime-item:hover .mr-anime-meta {
+  opacity: 1;
+  transform: translateY(0);
+}
+.mr-anime-rank {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: rgba(255,255,255,0.2);
+  line-height: 1;
+  transition: color 0.4s;
+  font-family: serif;
+}
+.mr-anime-item:hover .mr-anime-rank {
+  color: var(--accent);
+}
+
+/* Mobile Responsiveness for Anime Minimalist */
+@media (max-width: 768px) {
+  .mr-anime-item {
+    height: 90px;
+  }
+  .mr-anime-title {
+    transform: translateY(0);
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.2;
+  }
+  .mr-anime-meta {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .mr-anime-bg {
+    transform: scale(1.02);
+  }
+}

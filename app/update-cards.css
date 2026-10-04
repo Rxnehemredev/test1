@@ -1,0 +1,1354 @@
+/* 1. Classic (Asura Style) */
+.asura-card {
+  display: flex;
+  background: var(--latest-updates-card-bg, var(--bg-card));
+  border: 1px solid var(--latest-updates-card-border, var(--border-color));
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  gap: 14px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sol kenar accent şeridi */
+.asura-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.asura-card:hover {
+  border-color: rgba(var(--accent-rgb, 94,114,228), 0.3);
+  background: var(--latest-updates-hover-bg, var(--bg-tertiary));
+  transform: translateX(3px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+.asura-card:hover::before { opacity: 1; }
+
+/* Kapak — büyütüldü (80→100px), gölge eklendi */
+.asura-cover-wrapper {
+  width: 100px;
+  height: 142px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  transition: box-shadow 0.22s ease;
+}
+.asura-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  display: block;
+}
+.asura-card:hover .asura-cover-wrapper img {
+  transform: scale(1.06);
+}
+.asura-card:hover .asura-cover-wrapper {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+}
+
+.asura-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+/* Başlık */
+.asura-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--latest-updates-title-color, var(--text-primary));
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: block;
+}
+.asura-title:hover {
+  color: var(--accent);
+}
+
+/* Bölüm listesi */
+.asura-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+.asura-chapters .holo-chapter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  text-decoration: none;
+  transform: none !important;
+  min-width: 0;
+}
+.asura-chapters .holo-chapter-row:hover {
+  background: rgba(var(--accent-rgb,94,114,228), 0.1);
+  border-color: rgba(var(--accent-rgb,94,114,228), 0.2);
+  color: var(--text-primary);
+}
+/* Yeni bölüm vurgusu */
+.asura-chapters .holo-chapter-row.is-new {
+  border-color: rgba(var(--accent-rgb,94,114,228), 0.15);
+}
+
+/* 2. Cosmic Tear Card */
+.cosmic-card {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1px; /* border thickness */
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.cosmic-card:hover {
+  transform: translateY(-4px);
+}
+.cosmic-tear-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 40%, rgba(138, 43, 226, 0.3) 50%, transparent 60%);
+  background-size: 250% 250%;
+  animation: cosmic-tear-anim 4s infinite linear;
+  will-change: background-position;
+}
+@keyframes cosmic-tear-anim {
+  0% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+.cosmic-card:hover .cosmic-tear-container {
+  background: linear-gradient(135deg, transparent 40%, rgba(167, 139, 250, 0.6) 50%, transparent 60%);
+}
+.cosmic-card-inner {
+  position: relative;
+  z-index: 1;
+  background: var(--bg-secondary);
+  border-radius: calc(var(--radius-lg) - 1px);
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.cosmic-cover-wrapper {
+  width: 90px;
+  height: 130px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+.cosmic-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.cosmic-card:hover .cosmic-cover-wrapper img {
+  transform: scale(1.1) rotate(-2deg);
+}
+.cosmic-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cosmic-title {
+  font-weight: 800;
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, #fff, #a78bfa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cosmic-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cosmic-chapters .holo-chapter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-left: 2px solid rgba(138, 43, 226, 0.3);
+  background: linear-gradient(90deg, rgba(138, 43, 226, 0.05) 0%, transparent 100%);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  transform: none !important;
+}
+.cosmic-chapters .holo-chapter-row:hover {
+  border-left-color: #a78bfa;
+  background: linear-gradient(90deg, rgba(138, 43, 226, 0.15) 0%, transparent 100%);
+  color: #fff;
+  padding-left: 14px;
+}
+
+/* 3. Skill Tree Card */
+.skill-tree-card {
+  background: #0f1115;
+  border: 1px solid #23262d;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+}
+.skill-tree-card:hover {
+  border-color: #3f4450;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.st-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.st-cover-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #3f4450;
+  flex-shrink: 0;
+}
+.st-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.st-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #e2e8f0;
+  transition: color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.st-title:hover {
+  color: #38bdf8;
+}
+.st-tree-container {
+  position: relative;
+  padding-left: 24px;
+}
+.st-tree-line {
+  position: absolute;
+  top: 0;
+  bottom: 16px;
+  left: 24px;
+  width: 2px;
+  background: #2dd4bf;
+  box-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
+}
+.st-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+.st-chapters .holo-chapter-row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #23262d;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-left: 16px;
+  text-decoration: none;
+  transition: all 0.2s;
+  transform: none !important;
+}
+.st-chapters .holo-chapter-row::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #0f1115;
+  border: 2px solid #2dd4bf;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
+  transition: all 0.2s;
+}
+.st-chapters .holo-chapter-row::after {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  width: 16px;
+  height: 2px;
+  background: #2dd4bf;
+  z-index: -1;
+}
+.st-chapters .holo-chapter-row:hover {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: #2dd4bf;
+  color: #e2e8f0;
+  transform: translateX(4px);
+}
+.st-chapters .holo-chapter-row:hover::before {
+  background: #2dd4bf;
+}
+
+/* 5. Cinematic Premiere Card */
+.cinematic-card {
+  position: relative;
+  border-radius: var(--radius-xl, 16px);
+  overflow: hidden;
+  background: #0a0a0d;
+  display: flex;
+  flex-direction: column;
+  /* İçerik ortada-alt hizalaması */
+  justify-content: flex-end;
+  min-height: 220px;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.cinematic-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+}
+
+/* Arka plan görseli — lazy-load: hover'da yüklenir, varsayılan görünmez */
+.cine-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+  will-change: opacity;
+}
+.cinematic-card:hover .cine-bg {
+  opacity: 0.5;
+}
+
+/* Karanlık gradient — alt kısım daha koyu */
+.cine-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(5,5,8,0.1) 0%,
+    rgba(5,5,8,0.35) 35%,
+    rgba(5,5,8,0.88) 70%,
+    rgba(5,5,8,0.98) 100%
+  );
+  z-index: 1;
+}
+
+/* İçerik — kapak SOL, bilgi SAĞ; dikey orta-alt */
+.cine-content {
+  position: relative;
+  z-index: 2;
+  padding: 14px 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Kapak küçük resim */
+.cine-cover-wrapper {
+  width: 64px;
+  height: 90px;
+  border-radius: 7px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.7);
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  align-self: flex-end;
+}
+.cinematic-card:hover .cine-cover-wrapper {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.8);
+}
+.cine-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Sağ bilgi alanı */
+.cine-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+/* Başlık */
+.cine-title {
+  font-weight: 800;
+  font-size: 0.96rem;
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.95);
+  margin-bottom: 8px;
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  letter-spacing: 0.2px;
+  line-height: 1.35;
+  text-decoration: none;
+  width: 100%;
+}
+.cine-title:hover { opacity: 0.85; }
+
+/* Bölüm listesi */
+.cine-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+.cine-chapters .holo-chapter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 9px;
+  background: rgba(255,255,255,0.09);
+  border-radius: 6px;
+  font-size: 0.77rem;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transform: none !important;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.cine-chapters .holo-chapter-row:hover {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border-color: rgba(255,255,255,0.22);
+}
+.cine-chapters .holo-chapter-row .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.cine-chapters .holo-chapter-row .time {
+  flex-shrink: 0;
+  margin-left: 6px;
+  font-size: 0.67rem;
+  opacity: 0.55;
+}
+/* Yeni bölüm vurgusu */
+.cine-chapters .holo-chapter-row.is-new {
+  border-color: rgba(var(--accent-rgb,94,114,228), 0.35);
+  background: rgba(var(--accent-rgb,94,114,228), 0.1);
+}
+
+/* 6. Neon Pulse Card */
+.neonpulse-card {
+  position: relative;
+  background: #0d0f14;
+  border: 1px solid #1e2230;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  display: flex;
+}
+.neonpulse-card:hover {
+  border-color: #3b4fd8;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2), 0 8px 24px rgba(99, 102, 241, 0.12);
+  transform: translateY(-2px);
+}
+.neonpulse-accent-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+  flex-shrink: 0;
+}
+.neonpulse-card:hover .neonpulse-accent-bar {
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.9), 0 0 32px rgba(168, 85, 247, 0.4);
+}
+.neonpulse-inner {
+  display: flex;
+  gap: 14px;
+  padding: 12px 12px 12px 18px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.neonpulse-cover-wrapper {
+  width: 82px;
+  height: 118px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(99, 102, 241, 0.15);
+}
+.neonpulse-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.neonpulse-card:hover .neonpulse-cover-wrapper img {
+  transform: scale(1.07);
+}
+.neonpulse-cover-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+.neonpulse-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.neonpulse-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+  letter-spacing: 0.01em;
+}
+.neonpulse-title:hover {
+  color: #818cf8;
+}
+.neonpulse-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.neonpulse-chapters .holo-chapter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  transform: none !important;
+}
+.neonpulse-chapters .holo-chapter-row:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #c7d2fe;
+  padding-left: 14px;
+}
+
+/* ── Glassmorphism Card (style6) ── */
+.glass-card {
+  position: relative;
+  background: rgba(20, 20, 25, 0.6);
+  /* Performans: backdropFilter azaltıldı (16px -> 8px) - GPU compositing maliyetini düşürür */
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 114, 228, 0.15);
+}
+
+.glass-card-glow {
+  position: absolute;
+  top: -60%;
+  right: -30%;
+  width: 80%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(94, 114, 228, 0.25) 0%, transparent 65%);
+  pointer-events: none;
+  filter: blur(30px);
+  transition: opacity 0.4s ease;
+  opacity: 0;
+  z-index: 0;
+}
+.glass-card:hover .glass-card-glow {
+  opacity: 1;
+}
+.glass-card-inner {
+  display: flex;
+  gap: 13px;
+  padding: 11px 13px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  align-items: flex-start;
+}
+.glass-card-cover-wrapper {
+  width: 90px;
+  height: 130px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  align-self: flex-start;
+  position: relative;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+.glass-card:hover .glass-card-cover-wrapper {
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(94, 114, 228, 0.4);
+  transform: scale(1.05) translateY(-3px);
+}
+.glass-card-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.45s ease;
+  display: block;
+}
+.glass-card:hover .glass-card-cover-wrapper img {
+  transform: scale(1.07);
+}
+.glass-card-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(255,255,255,0.08) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+.glass-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+.glass-card-title {
+  font-weight: 700;
+  font-size: 0.93rem;
+  color: var(--latest-updates-title-color, rgba(255, 255, 255, 0.90));
+  margin-bottom: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  display: block;
+}
+.glass-card-title:hover {
+  color: #a5b4fc;
+}
+.glass-card-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.glass-card-chapters .holo-chapter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: none !important;
+  min-width: 0;
+}
+.glass-card-chapters .holo-chapter-row:hover {
+  background: rgba(94, 114, 228, 0.2);
+  border-color: rgba(94, 114, 228, 0.5);
+  color: #fff;
+  padding-left: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════
+   GlassmorphismCard — yeniden tasarlandı (gc-*)
+   Durum rozeti kapak üzerine position:absolute ile eklendi
+   ══════════════════════════════════════════════════════ */
+
+.gc-card {
+  display: flex;
+  flex-direction: row;
+  background: rgba(18, 18, 26, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  overflow: hidden;
+  height: 190px;
+  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.gc-card:hover {
+  border-color: rgba(var(--accent-rgb, 94, 114, 228), 0.35);
+  background: rgba(24, 24, 36, 0.88);
+  transform: translateY(-3px);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(var(--accent-rgb, 94, 114, 228), 0.18);
+}
+
+/* Sol: Kapak sarıcı */
+.gc-cover-link {
+  position: relative;
+  width: 118px;
+  min-width: 118px;
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+}
+.gc-cover-link img {
+  transition: transform 0.4s ease;
+}
+.gc-card:hover .gc-cover-link img {
+  transform: scale(1.07);
+}
+
+/* Alt gradient — badge'in üzerinde okunaklı görünmesi için */
+.gc-cover-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Tür rozeti — sol üst */
+.gc-type-badge {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  z-index: 3;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Durum rozeti — sol alt, kapak üzerinde */
+.gc-status-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 6px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  z-index: 4;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.gc-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Durum renkleri — hover glow */
+.gc-status-ongoing  { border-top: 1px solid rgba(16,185,129,0.4); }
+.gc-status-completed{ border-top: 1px solid rgba(99,102,241,0.4); }
+.gc-status-hiatus   { border-top: 1px solid rgba(245,158,11,0.4); }
+.gc-status-cancelled{ border-top: 1px solid rgba(239,68,68,0.4);  }
+.gc-status-current  { border-top: 1px solid rgba(6,182,212,0.4);  }
+
+/* Sağ: İçerik */
+.gc-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Başlık bağlantısı */
+.gc-title-link {
+  text-decoration: none;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+  display: block;
+}
+.gc-title {
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  transition: color 0.2s ease;
+}
+.gc-title-link:hover .gc-title {
+  color: #a5b4fc;
+}
+
+/* Bölüm listesi */
+.gc-chapters {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  overflow: hidden;
+}
+.gc-chapters .holo-chapter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 11px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, padding-left 0.22s ease;
+  transform: none !important;
+  min-width: 0;
+}
+.gc-chapters .holo-chapter-row:hover {
+  background: rgba(var(--accent-rgb, 94, 114, 228), 0.14);
+  border-color: rgba(var(--accent-rgb, 94, 114, 228), 0.35);
+  color: #fff;
+  padding-left: 15px;
+}
+.gc-chapters .holo-chapter-row.is-new {
+  border-color: rgba(var(--accent-rgb, 94, 114, 228), 0.25);
+  background: rgba(var(--accent-rgb, 94, 114, 228), 0.07);
+}
+.gc-chapters .holo-chapter-row .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.gc-chapters .holo-chapter-row .time {
+  flex-shrink: 0;
+  margin-left: 8px;
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gc-card:hover {
+    transform: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+}
+@media (max-width: 600px) {
+  .gc-card {
+    height: auto;
+    min-height: 160px;
+  }
+  .gc-cover-link {
+    width: 100px;
+    min-width: 100px;
+    height: auto;
+    min-height: 160px;
+  }
+  .gc-content {
+    padding: 10px 12px 10px;
+  }
+  .gc-title {
+    font-size: 0.87rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .gc-chapters .holo-chapter-row {
+    font-size: 0.78rem;
+    padding: 5px 9px;
+  }
+  .gc-chapters .holo-chapter-row:hover {
+    padding-left: 9px;
+  }
+}
+@media (max-width: 400px) {
+  .gc-cover-link {
+    width: 88px;
+    min-width: 88px;
+  }
+  .gc-status-badge {
+    font-size: 0.55rem;
+    padding: 4px 4px;
+  }
+  .gc-chapters .holo-chapter-row {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+}
+
+/* Mobile Responsiveness for all Update Cards */
+@media (max-width: 768px) {
+  /* Disable hover transforms on touch screens to prevent layout shifts */
+  .asura-card:hover,
+  .cosmic-card:hover,
+  .cinematic-card:hover,
+  .neonpulse-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .asura-card:hover::before { opacity: 0; }
+  .st-chapters .holo-chapter-row:hover {
+    transform: none;
+  }
+  .cinematic-card:hover .cine-bg {
+    transform: none;
+    opacity: 0.5;
+  }
+
+  /* Disable expensive animations on mobile to prevent stuttering */
+  .cosmic-tear-container {
+    animation: none;
+    background-position: 100% 100%;
+  }
+  .cosmic-tear-glow {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  /* Glassmorphism: backdrop-filter causes full-card blur on some mobile browsers */
+  .glass-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (max-width: 600px) {
+  /* ── Asura Card — yatay layout, kapak biraz küçülür ── */
+  .asura-card {
+    padding: 10px;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .asura-card:hover { transform: none; box-shadow: none; }
+  .asura-cover-wrapper {
+    width: 80px;
+    height: 114px;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+  .asura-content {
+    justify-content: flex-start;
+    min-width: 0;
+    flex: 1;
+  }
+  .asura-title {
+    font-size: 0.87rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .asura-chapters .holo-chapter-row {
+    padding: 5px 8px;
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 400px) {
+  /* ── Asura Card — çok küçük ekran: dikey layout, kapak ortalanır ── */
+  .asura-card {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 10px;
+    gap: 10px;
+  }
+  .asura-cover-wrapper {
+    width: 120px;
+    height: 170px;
+    align-self: center;
+    flex-shrink: 0;
+  }
+  .asura-content {
+    width: 100%;
+    align-items: stretch;
+  }
+  .asura-title {
+    font-size: 0.9rem;
+    text-align: center;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .asura-chapters {
+    width: 100%;
+    margin-top: 0;
+  }
+  .asura-chapters .holo-chapter-row {
+    font-size: 0.78rem;
+    padding: 6px 8px;
+  }
+  /* Accent şeridi dikey modda gizle */
+  .asura-card::before { display: none; }
+
+  /* ── Cosmic Card ── */
+  .cosmic-card-inner {
+    padding: 10px;
+    gap: 10px;
+  }
+  .cosmic-cover-wrapper {
+    width: 78px;
+    height: 112px;
+  }
+  .cosmic-title {
+    font-size: 0.9rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+  .cosmic-chapters .holo-chapter-row {
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    /* Ensure text truncates instead of overflowing */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cosmic-chapters .holo-chapter-row .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  /* Disable hover indent on mobile — no room */
+  .cosmic-chapters .holo-chapter-row:hover {
+    padding-left: 8px;
+  }
+
+  /* ── Skill Tree Card ── */
+  .skill-tree-card {
+    padding: 10px;
+  }
+  .st-header {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .st-cover-wrapper {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+  .st-title {
+    font-size: 0.9rem;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  /* Reduce tree indentation so rows don't overflow */
+  .st-tree-container {
+    padding-left: 18px;
+  }
+  .st-tree-line {
+    left: 18px;
+  }
+  .st-chapters .holo-chapter-row {
+    margin-left: 12px;
+    font-size: 0.78rem;
+    padding: 6px 8px;
+    /* Clip text to prevent overflow */
+    overflow: hidden;
+  }
+  .st-chapters .holo-chapter-row .name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  /* Adjust pseudo-element dot positions for reduced indent */
+  .st-chapters .holo-chapter-row::before {
+    left: -18px;
+    width: 10px;
+    height: 10px;
+  }
+  .st-chapters .holo-chapter-row::after {
+    left: -12px;
+    width: 12px;
+  }
+  /* Keep dots visible since they're outside the row boundary */
+  .st-chapters .holo-chapter-row {
+    overflow: visible;
+  }
+
+  /* ── Cinematic Card ── */
+  .cinematic-card {
+    min-height: 190px;
+    border-radius: 12px;
+  }
+  .cinematic-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .cinematic-card:hover .cine-bg {
+    opacity: 0.4;
+    filter: blur(3px) saturate(1.2);
+    transform: none;
+  }
+  .cinematic-card:hover .cine-cover-wrapper {
+    transform: none;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+  }
+  .cine-content {
+    padding: 12px 12px 14px;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .cine-cover-wrapper {
+    width: 64px;
+    height: 92px;
+  }
+  .cine-title {
+    font-size: 0.88rem;
+    -webkit-line-clamp: 2;
+    margin-bottom: 7px;
+    letter-spacing: 0;
+  }
+  .cine-chapters .holo-chapter-row {
+    font-size: 0.73rem;
+    padding: 4px 8px;
+  }
+
+  /* ── Neon Pulse Card ── */
+  .neonpulse-inner {
+    padding: 10px 10px 10px 16px;
+    gap: 10px;
+  }
+  .neonpulse-cover-wrapper {
+    width: 68px;
+    height: 98px;
+  }
+  .neonpulse-title {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+  .neonpulse-chapters .holo-chapter-row {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+  }
+  .neonpulse-chapters .holo-chapter-row:hover {
+    padding-left: 8px;
+  }
+
+  /* ── Common overflow guards for all cards ── */
+  .asura-card,
+  .cosmic-card,
+  .cosmic-card-inner,
+  .skill-tree-card,
+  .cinematic-card {
+    overflow: hidden;
+  }
+
+  /* ── Glassmorphism Card mobile ── */
+  .glass-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass-card:hover {
+    transform: none;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.30);
+  }
+  .glass-card:hover .glass-card-cover-wrapper {
+    transform: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.10);
+  }
+  .glass-card::after { display: none; }
+  .glass-card-inner {
+    padding: 12px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .glass-card-cover-wrapper {
+    width: 76px;
+    height: 108px;
+  }
+  .glass-card-title {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .glass-card-chapters .holo-chapter-row {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass-card-chapters .holo-chapter-row:hover {
+    padding-left: 10px;
+  }
+
+  .neonpulse-card,
+  .neonpulse-inner {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .asura-content,
+  .cosmic-content,
+  .st-tree-container,
+  .cine-info,
+  .neonpulse-content {
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  /* Chapter rows: prevent time stamp from causing overflow */
+  .holo-chapter-row {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    flex-wrap: nowrap;
+  }
+  .holo-chapter-row .time {
+    flex-shrink: 0;
+    margin-left: 4px;
+    font-size: 0.68rem;
+  }
+}
+

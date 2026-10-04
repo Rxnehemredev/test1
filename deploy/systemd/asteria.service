@@ -1,0 +1,68 @@
+# /etc/systemd/system/asteria.service
+# Kurulum:
+#   sudo useradd --system --home /opt/asteria --shell /usr/sbin/nologin asteria
+#   sudo install -d -o asteria -g asteria /opt/asteria
+#   (uygulamayı /opt/asteria içine kopyala, `npm ci && npm run build`)
+#   sudo install -d -m 750 -o root -g asteria /etc/asteria
+#   sudo install -m 640 -o root -g asteria .env.production /etc/asteria/asteria.env
+#   sudo systemctl daemon-reload && sudo systemctl enable --now asteria
+[Unit]
+Description=Asteria Scans (Next.js)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=asteria
+Group=asteria
+WorkingDirectory=/opt/asteria
+EnvironmentFile=/etc/asteria/asteria.env
+Environment=NODE_ENV=production
+Environment=SELF_HOSTED=1
+# YALNIZCA loopback: dış dünyadan doğrudan erişim ağ seviyesinde imkânsız.
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+# HTTP başlık tavanı (varsayılan 16 KB) + Node'un kendi yavaş-istek zaman aşımları
+Environment=NODE_OPTIONS=--max-http-header-size=16384 --max-old-space-size=1024
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 127.0.0.1 -p 3000 --keepAliveTimeout 15000
+Restart=always
+RestartSec=2
+# Çökme döngüsünde sistemi boğma
+StartLimitIntervalSec=60
+StartLimitBurst=10
+
+# ── Sertleştirme (sandbox) ────────────────────────────────────────────────────
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+UMask=0077
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+# V8 JIT, MemoryDenyWriteExecute ile uyumsuzdur → bilerek KAPALI bırakılmadı (yazılmadı).
+# Yalnızca bu dizinlere yazılabilir:
+ReadWritePaths=-/opt/asteria/.next/cache
+# Kaynak tavanları (DoS'ta tüm makineyi tüketmesin)
+MemoryMax=1500M
+TasksMax=512
+LimitNOFILE=16384
+
+[Install]
+WantedBy=multi-user.target
