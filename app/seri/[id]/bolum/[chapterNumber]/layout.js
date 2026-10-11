@@ -1,4 +1,5 @@
 import { getDb } from '@/lib/db';
+import { isDefaultTitle } from '@/lib/utils/titles';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://asterianewdayv3.vercel.app';
 
@@ -110,17 +111,7 @@ export async function generateMetadata({ params }) {
   }
 }
 
-function isDefaultTitle(title, chNum) {
-  if (!title) return true;
-  const clean = title.trim().toLowerCase();
-  const num = String(chNum).trim();
-  const defaults = [
-    `chapter ${num}`, `ch. ${num}`, `ch.${num}`,
-    `bölüm ${num}`, `böl. ${num}`, `böl.${num}`,
-    `${num}. bölüm`, `bölüm: ${num}`, num,
-  ];
-  return defaults.includes(clean);
-}
+
 
 // JSON-LD'leri JSX içinde render et (metadata.other çalışmaz)
 async function BolumJsonLd({ params }) {

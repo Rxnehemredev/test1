@@ -7,147 +7,17 @@ import Link from 'next/link';
 const CommentSection = lazy(() => import('@/components/CommentSection'));
 import { useAuth } from '@/components/AuthProvider';
 import { sanitizeBlogHtml } from '@/lib/sanitize-html';
+import { GENRE_TR } from '@/lib/constants/genres';
+import { isDefaultTitle } from '@/lib/utils/titles';
 
-// ── Görsel optimizasyonu yardımcıları ──
-// Sayfa görselleri imgbb (i.ibb.co) üzerinden veya yerel /uploads yolundan geliyor.
-// next.config.mjs bu domain için remotePattern + AVIF/WebP dönüşümü zaten tanımlı;
-// next/image kullanarak cihaz genişliğine göre otomatik küçültülmüş, modern formatta
-// (AVIF/WebP) varyantlar servis ediyoruz — bu, orijinal ~1200px genişlikteki dosyayı
-// olduğu gibi indirmekten çok daha az veri anlamına gelir (özellikle mobilde).
-// Next Image optimizer sadece next.config.mjs'de tanımlı domainlerde çalışabildiği
-// için, tanınmayan/harici bir host görürsek güvenli şekilde normal <img>'e düşüyoruz.
-const NEXT_IMAGE_OPTIMIZABLE_HOSTS = new Set(['i.ibb.co']);
-function isOptimizableImageSrc(url) {
-    if (!url) return false;
-    // /api/img path'leri CDN tarafından cache'leniyor.
-    // /_next/image üzerinden tekrar proxy'lemek bandwidth'i ikiye katlar — muaf tut.
-    if (url.startsWith('/api/img')) return false;
-    // Diğer yerel path'ler (/uploads/ vb.) next/image'dan geçebilir.
-    if (url.startsWith('/')) return true;
-    try {
-        return NEXT_IMAGE_OPTIMIZABLE_HOSTS.has(new URL(url).hostname);
-    } catch {
-        return false;
-    }
-}
+import ReaderPageImage, { setRefreshPagesCallback } from '@/components/reader/ReaderPageImage';
+import ReaderSupportCard from '@/components/reader/ReaderSupportCard';
+import EndChapterCard from '@/components/reader/EndChapterCard';
+import ReaderBugModal from '@/components/reader/ReaderBugModal';
+import ReaderHud from '@/components/reader/ReaderHud';
+import ReaderNovelView from '@/components/reader/ReaderNovelView';
 
-// Bölüm sayfası görseli — next/image optimizer URL'i üzerinden (AVIF/WebP +
-// boyut küçültme, veri tasarrufu için) yüklenir, sonra TEK bir <img>/<canvas>
-// olarak DOM'a konmak yerine yatay şeritlere bölünüp ayrı <canvas>'lara
-// çizilir. Amaç: "sağ tık > resmi kaydet", sürükle-bırak veya basit bir
-// tarayıcı eklentisinin (bulk image downloader) sayfayı TEK bir dosya olarak
-// yakalamasını zorlaştırmak.
-//
-// DÜRÜST SINIR: Bu, Network sekmesinden ham response body'yi (veya proxy
-// üzerinden gelen tek görseli) yakalayan birini durdurmaz — sadece "gör,
-// sağ-tıkla, kaydet" seviyesindeki kopyalamayı ve genel amaçlı toplu indirme
-// eklentilerini büyük ölçüde etkisiz kılar. /api/img proxy'si + kısa ömürlü
-// imzalı token (bkz. lib/imageProxyToken.js) ile birlikte, art arda scraping
-// yapmayı da (her istek için geçerli bir chapter-API çağrısı + taze token
-// gerektirdiğinden) belirgin şekilde zorlaştırır.
-const OPTIMIZED_WIDTH = 1200;
 
-function buildOptimizedSrc(src) {
-    // Sadece kendi originimizden gelen (proxy'lenmiş) veya yerel /uploads
-    // görsellerinde next/image optimizer endpoint'ini manuel çağırıyoruz —
-    // format negotiation (AVIF/WebP) Accept header'a göre otomatik çalışır.
-    if (!src || !src.startsWith('/')) return src;
-    return `/_next/image?url=${encodeURIComponent(src)}&w=${OPTIMIZED_WIDTH}&q=80`;
-}
-
-// Token expire olduğunda sayfaları yenilemek için ReaderContent'ten set edilir.
-let _refreshPagesCallback = null;
-
-function ReaderPageImage({ page, retryToken, priority, className, style, onLoadDone, onErrorDone, seriesTitle, chapterNumber }) {
-    const [activeSrc, setActiveSrc] = useState(null);
-    const triedRefreshRef = useRef(false);
-
-    const baseSrc = page.image_url || page.display_image;
-    const rawSrc = retryToken ? `${baseSrc}?retry=${retryToken}` : baseSrc;
-    const hasDims = Number(page.width) > 0 && Number(page.height) > 0;
-    const canOptimize = isOptimizableImageSrc(baseSrc);
-    const computedSrc = hasDims && canOptimize ? buildOptimizedSrc(rawSrc) : rawSrc;
-    const loadSrc = activeSrc || computedSrc;
-    // Google Görseller SEO: jenerik "Sayfa 3" yerine seri/bölüm bağlamı içeren
-    // alt text — görsel arama sonuçlarında bu sayfaların çıkma ihtimalini artırır.
-    const alt = seriesTitle
-        ? `${seriesTitle}${chapterNumber ? ` Bölüm ${chapterNumber}` : ''} — Sayfa ${page.page_number}`
-        : `Sayfa ${page.page_number}`;
-
-    // baseSrc değişince (yeni token gelince) override'ı temizle
-    useEffect(() => {
-        setActiveSrc(null);
-        triedRefreshRef.current = false;
-    }, [baseSrc]);
-
-    return (
-        <img
-            src={loadSrc}
-            alt={alt}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            className={className}
-            style={{
-                width: '100%',
-                display: 'block',
-                aspectRatio: hasDims ? String(page.width / page.height) : undefined,
-                background: 'rgba(255,255,255,0.03)',
-                ...style,
-            }}
-            onLoad={onLoadDone}
-            onError={async (e) => {
-                const img = e.currentTarget;
-
-                // 1) Optimize src başarısız → ham proxy src dene
-                if (img.src !== rawSrc && rawSrc !== loadSrc) {
-                    img.src = rawSrc;
-                    return;
-                }
-
-                // 2) Token expire olmuş olabilir (/api/img 403) → chapter'ı
-                //    yeniden fetch edip taze token'lı URL'leri al, bir kez dene.
-                if (!triedRefreshRef.current && _refreshPagesCallback) {
-                    triedRefreshRef.current = true;
-                    try {
-                        const freshUrl = await _refreshPagesCallback(page.page_number);
-                        if (freshUrl && freshUrl !== baseSrc) {
-                            setActiveSrc(freshUrl);
-                            return;
-                        }
-                    } catch { /* yenileme başarısız, aşağıya düş */ }
-                }
-
-                // 3) Her şey başarısız → hata göster
-                onErrorDone?.();
-            }}
-        />
-    );
-}
-
-const GENRE_TR = {
-    'Action': 'Aksiyon', 'Adventure': 'Macera', 'Comedy': 'Komedi', 'Drama': 'Drama',
-    'Fantasy': 'Fantastik', 'Historical': 'Tarihi', 'Horror': 'Korku', 'Isekai': 'Isekai',
-    'Martial Arts': 'Dövüş Sanatları', 'Mystery': 'Gizem', 'Reincarnation': 'Reenkarnasyon',
-    'Romance': 'Romantik', 'School': 'Okul', 'Sci-Fi': 'Bilim Kurgu',
-    'Supernatural': 'Doğaüstü', 'Thriller': 'Gerilim',
-    'Ecchi': 'Ecchi', 'Harem': 'Harem', 'Josei': 'Josei', 'Mature': 'Yetişkin',
-    'Mecha': 'Mecha', 'Psychological': 'Psikolojik', 'Seinen': 'Seinen', 'Shoujo': 'Shoujo',
-    'Shounen': 'Shounen', 'Slice of Life': 'Günlük Yaşam', 'Sports': 'Spor',
-    'Tragedy': 'Trajedi', 'Webtoon': 'Webtoon', 'Manhwa': 'Manhwa', 'Manhua': 'Manhua'
-};
-
-function isDefaultTitle(title, chNum) {
-    if (!title) return true;
-    const cleanTitle = title.trim().toLowerCase();
-    const cleanNum = String(chNum).trim().toLowerCase();
-    const normalized = cleanTitle.replace(/\s+/g, ' ');
-    const defaults = [
-        `chapter ${cleanNum}`, `ch. ${cleanNum}`, `ch.${cleanNum}`,
-        `bölüm ${cleanNum}`, `böl. ${cleanNum}`, `böl.${cleanNum}`,
-        `${cleanNum}. bölüm`, `bölüm: ${cleanNum}`, cleanNum
-    ];
-    return defaults.includes(normalized);
-}
 
 export function ReaderContent({ chapterId: propChapterId, initialData } = {}) {
     const params = useParams();
@@ -392,7 +262,7 @@ export function ReaderContent({ chapterId: propChapterId, initialData } = {}) {
     // Token expire olduğunda ReaderPageImage bileşeninin çağırabileceği callback.
     // Mevcut chapter'ı yeniden fetch eder ve ilgili sayfanın taze display_image URL'sini döner.
     useEffect(() => {
-        _refreshPagesCallback = async (pageNumber) => {
+        setRefreshPagesCallback(async (pageNumber) => {
             const res = await fetch(`/api/chapters/${chapterId}`);
             if (!res.ok) return null;
             const result = await res.json();
@@ -403,8 +273,8 @@ export function ReaderContent({ chapterId: propChapterId, initialData } = {}) {
                 return p?.display_image || p?.image_url || null;
             }
             return null;
-        };
-        return () => { _refreshPagesCallback = null; };
+        });
+        return () => { setRefreshPagesCallback(null); };
     }, [chapterId]);
     
     // Reset TTS on unmount or chapter change
@@ -955,340 +825,91 @@ export function ReaderContent({ chapterId: propChapterId, initialData } = {}) {
             )}
 
             {/* ── HUD (Heads-Up Display) ── */}
-            {mounted && createPortal(
-                <div className={`reader-hud ${hudVisible ? 'visible' : 'hidden'}`}>
-                    
-                    {/* Top Bar */}
-                    <div className="rh-topbar">
-                        <div className="rh-title-group">
-                            <Link href={`/seri/${seriesSlug}`} className="rh-back-btn" title="Seriye Dön">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6"/></svg>
-                            </Link>
-                            <div className="rh-title-text">
-                                <h1 className="rh-series-title" title={series.title}>{series.title}</h1>
-                                <h2 className="rh-chapter-title">
-                                    {appSettings.lang_chapter_prefix || 'Bölüm'} {chapter.chapter_number}
-                                    {chapter.title && !isDefaultTitle(chapter.title, chapter.chapter_number) ? ` — ${chapter.title}` : ''}
-                                </h2>
-                            </div>
-                        </div>
-                        <div className="rh-nav-group">
-                            <button className="rh-btn" onClick={openBugModal} title="Hata Bildir">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                <span>Hata Bildir</span>
-                            </button>
-                            <button className={`rh-btn ${activePanel === 'settings' ? 'active' : ''}`} onClick={() => togglePanel('settings')}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <span>Ayarlar</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Panels */}
-                    <div className={`rh-panel ${activePanel === 'settings' ? 'open' : ''}`}>
-                        <div className="rh-panel-title">Okuyucu Ayarları</div>
-
-                        {isNovelMode ? (
-                            <>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Tema</span>
-                                    <div className="rh-mode-toggle">
-                                        <button className={`rh-mode-btn ${novelTheme === 'dark' ? 'active' : ''}`} onClick={() => updateSetting('novel_theme', 'dark', setNovelTheme)}>Koyu</button>
-                                        <button className={`rh-mode-btn ${novelTheme === 'light' ? 'active' : ''}`} onClick={() => updateSetting('novel_theme', 'light', setNovelTheme)}>Açık</button>
-                                        <button className={`rh-mode-btn ${novelTheme === 'sepia' ? 'active' : ''}`} onClick={() => updateSetting('novel_theme', 'sepia', setNovelTheme)}>Sepya</button>
-                                    </div>
-                                </div>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Yazı Tipi</span>
-                                    <div className="rh-mode-toggle">
-                                        <button className={`rh-mode-btn ${novelFontFamily === 'sans-serif' ? 'active' : ''}`} onClick={() => updateSetting('novel_font', 'sans-serif', setNovelFontFamily)}>Sans-Serif</button>
-                                        <button className={`rh-mode-btn ${novelFontFamily === 'serif' ? 'active' : ''}`} onClick={() => updateSetting('novel_font', 'serif', setNovelFontFamily)}>Serif</button>
-                                    </div>
-                                </div>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Metin Boyutu</span>
-                                    <div className="rh-setting-control">
-                                        <input type="range" min="14" max="36" step="1" value={novelFontSize} onChange={e => updateSetting('novel_fontsize', Number(e.target.value), setNovelFontSize)} className="rh-slider" />
-                                        <span style={{ fontSize: '0.8rem', color: '#fff', width: 30 }}>{novelFontSize}px</span>
-                                    </div>
-                                </div>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Hizalama</span>
-                                    <div className="rh-mode-toggle">
-                                        <button className={`rh-mode-btn ${novelTextAlign === 'left' ? 'active' : ''}`} onClick={() => updateSetting('novel_textalign', 'left', setNovelTextAlign)}>Sola</button>
-                                        <button className={`rh-mode-btn ${novelTextAlign === 'justify' ? 'active' : ''}`} onClick={() => updateSetting('novel_textalign', 'justify', setNovelTextAlign)}>İki Yana</button>
-                                    </div>
-                                </div>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Satır Aralığı</span>
-                                    <div className="rh-mode-toggle">
-                                        <button className={`rh-mode-btn ${novelLineHeight === 1.5 ? 'active' : ''}`} onClick={() => updateSetting('novel_lineheight', 1.5, setNovelLineHeight)}>Dar</button>
-                                        <button className={`rh-mode-btn ${novelLineHeight === 1.8 ? 'active' : ''}`} onClick={() => updateSetting('novel_lineheight', 1.8, setNovelLineHeight)}>Normal</button>
-                                        <button className={`rh-mode-btn ${novelLineHeight === 2.2 ? 'active' : ''}`} onClick={() => updateSetting('novel_lineheight', 2.2, setNovelLineHeight)}>Geniş</button>
-                                    </div>
-                                </div>
-                                <div className="rh-setting-row" style={{ borderTop: '1px solid var(--border-color)', paddingTop: 16 }}>
-                                    <span className="rh-setting-label">Sesli Okuma (TTS)</span>
-                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                        <button className="btn btn-sm btn-primary" onClick={toggleTts}>
-                                            {ttsPlaying && !ttsPaused ? 'Duraklat' : 'Oynat'}
-                                        </button>
-                                        <button className="btn btn-sm btn-ghost" onClick={stopTts} disabled={!ttsPlaying}>Durdur</button>
-                                    </div>
-                                </div>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Okuma Hızı</span>
-                                    <div className="rh-setting-control">
-                                        <input type="range" min="0.5" max="2" step="0.1" value={ttsRate} onChange={e => updateSetting('tts_rate', Number(e.target.value), setTtsRate)} className="rh-slider" />
-                                        <span style={{ fontSize: '0.8rem', color: '#fff', width: 30 }}>{ttsRate}x</span>
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="rh-setting-row">
-                                    <span className="rh-setting-label">Okuma Modu</span>
-                                    <div className="rh-mode-toggle">
-                                        <button className={`rh-mode-btn ${!isMangaMode ? 'active' : ''}`} onClick={() => updateSetting('reading_mode', 'webtoon', setReadingMode)}>Webtoon</button>
-                                        <button className={`rh-mode-btn ${isMangaMode ? 'active' : ''}`} onClick={() => updateSetting('reading_mode', 'manga', setReadingMode)}>Manga</button>
-                                    </div>
-                                </div>
-
-                        {isMangaMode && (
-                            <div className="rh-setting-row">
-                                <span className="rh-setting-label">Yön</span>
-                                <div className="rh-mode-toggle">
-                                    <button className={`rh-mode-btn ${mangaDirection === 'rtl' ? 'active' : ''}`} onClick={() => updateSetting('manga_dir', 'rtl', setMangaDirection)}>Sağdan Sola</button>
-                                    <button className={`rh-mode-btn ${mangaDirection === 'ltr' ? 'active' : ''}`} onClick={() => updateSetting('manga_dir', 'ltr', setMangaDirection)}>Soldan Sağa</button>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="rh-setting-row">
-                            <span className="rh-setting-label">Resim Genişliği</span>
-                            <div className="rh-setting-control">
-                                <input type="range" min="50" max="100" step="5" value={fontSize} onChange={e => updateSetting('font_size', Number(e.target.value), setFontSize)} className="rh-slider" />
-                                <span style={{ fontSize: '0.8rem', color: '#fff', width: 30 }}>{fontSize}%</span>
-                            </div>
-                        </div>
-
-                        <div className="rh-setting-row">
-                            <span className="rh-setting-label">Parlaklık</span>
-                            <div className="rh-setting-control">
-                                <input type="range" min="30" max="100" step="5" value={brightness} onChange={e => updateSetting('brightness', Number(e.target.value), setBrightness)} className="rh-slider" />
-                                <span style={{ fontSize: '0.8rem', color: '#fff', width: 30 }}>{brightness}%</span>
-                            </div>
-                        </div>
-
-                                {!isMangaMode && (
-                                    <div className="rh-setting-row">
-                                        <span className="rh-setting-label">Boşluksuz Mod</span>
-                                        <button className={`rsp-toggle ${seamlessMode ? 'on' : ''}`} onClick={() => updateSetting('seamless_mode', !seamlessMode, setSeamlessMode)}>
-                                            <span className="rsp-toggle-knob" />
-                                        </button>
-                                    </div>
-                                )}
-
-                                {!isMangaMode && (
-                                    <div className="rh-setting-row">
-                                        <span className="rh-setting-label">Dokunarak Kaydır</span>
-                                        <button className={`rsp-toggle ${tapToScroll ? 'on' : ''}`} onClick={() => updateSetting('tap_to_scroll', !tapToScroll, setTapToScroll)}>
-                                            <span className="rsp-toggle-knob" />
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        <div className="rh-setting-row">
-                            <span className="rh-setting-label">Sinema Modu (Koyu)</span>
-                            <button className={`rsp-toggle ${theaterMode ? 'on' : ''}`} onClick={() => updateSetting('theater_mode', !theaterMode, setTheaterMode)}>
-                                <span className="rsp-toggle-knob" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className={`rh-panel ${activePanel === 'chapters' ? 'open' : ''}`}>
-                        <div className="rh-panel-title">Bölüm Seçici</div>
-                        <div className="rh-chapter-list">
-                            {[...allChapters].sort((a,b) => b.chapter_number - a.chapter_number).map(ch => (
-                                <button key={ch.id} className={`rh-chapter-item ${String(ch.id) === String(chapterId) ? 'current' : ''}`} onClick={() => navigateTo(ch)}>
-                                    {appSettings.lang_chapter_prefix || 'Bölüm'} {ch.chapter_number}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Bottom Bar */}
-                    <div style={{ position: 'relative' }}>
-                        <div className="hud-progress-container">
-                            <div className="hud-progress-bar" style={{ width: `${readingProgress}%` }} />
-                        </div>
-                        <div className="rh-bottombar">
-                            <button className="rh-btn" onClick={() => navigateTo(prevChapter)} disabled={!prevChapter} title="Önceki Bölüm">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m15 18-6-6 6-6"/></svg>
-                                <span>Önceki</span>
-                            </button>
-                            
-                            <button className="rh-chapter-selector" onClick={() => togglePanel('chapters')}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                                Bölüm {chapter.chapter_number}
-                                {isMangaMode && <span style={{ opacity: 0.5, fontSize: '0.8rem', marginLeft: 4 }}>({currentPageIndex + 1}/{pages.length})</span>}
-                            </button>
-
-                            <button className="rh-btn" onClick={() => navigateTo(nextChapter)} disabled={!nextChapter} title="Sonraki Bölüm">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
-                                <span>Sonraki</span>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>,
-                document.body
-            )}
+            <ReaderHud
+                mounted={mounted}
+                hudVisible={hudVisible}
+                seriesSlug={seriesSlug}
+                series={series}
+                chapter={chapter}
+                appSettings={appSettings}
+                openBugModal={openBugModal}
+                activePanel={activePanel}
+                togglePanel={togglePanel}
+                isNovelMode={isNovelMode}
+                isMangaMode={isMangaMode}
+                novelTheme={novelTheme}
+                setNovelTheme={setNovelTheme}
+                novelFontFamily={novelFontFamily}
+                setNovelFontFamily={setNovelFontFamily}
+                novelFontSize={novelFontSize}
+                setNovelFontSize={setNovelFontSize}
+                novelTextAlign={novelTextAlign}
+                setNovelTextAlign={setNovelTextAlign}
+                novelLineHeight={novelLineHeight}
+                setNovelLineHeight={setNovelLineHeight}
+                ttsPlaying={ttsPlaying}
+                ttsPaused={ttsPaused}
+                toggleTts={toggleTts}
+                stopTts={stopTts}
+                ttsRate={ttsRate}
+                setTtsRate={setTtsRate}
+                setReadingMode={setReadingMode}
+                mangaDirection={mangaDirection}
+                setMangaDirection={setMangaDirection}
+                fontSize={fontSize}
+                setFontSize={setFontSize}
+                brightness={brightness}
+                setBrightness={setBrightness}
+                seamlessMode={seamlessMode}
+                setSeamlessMode={setSeamlessMode}
+                tapToScroll={tapToScroll}
+                setTapToScroll={setTapToScroll}
+                theaterMode={theaterMode}
+                setTheaterMode={setTheaterMode}
+                updateSetting={updateSetting}
+                allChapters={allChapters}
+                chapterId={chapterId}
+                navigateTo={navigateTo}
+                readingProgress={readingProgress}
+                prevChapter={prevChapter}
+                nextChapter={nextChapter}
+                currentPageIndex={currentPageIndex}
+                pages={pages}
+            />
 
             {/* ── Bug Report Modal ── */}
-            {mounted && showBugModal && createPortal(
-                <div
-                    style={{
-                        position: 'fixed', inset: 0, zIndex: 99999,
-                        background: 'rgba(0,0,0,0.75)',
-                        backdropFilter: 'blur(4px)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '20px',
-                    }}
-                    onClick={(e) => { if (e.target === e.currentTarget) closeBugModal(); }}
-                >
-                    <div style={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 16,
-                        padding: '28px 28px 24px',
-                        width: '100%', maxWidth: 480,
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                    }}>
-                        {/* Header */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                </div>
-                                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Hata Bildir</h3>
-                            </div>
-                            <button onClick={closeBugModal} aria-label="Kapat" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, borderRadius: 6, display: 'flex' }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                        </div>
-
-                        {/* Chapter info */}
-                        <div style={{ background: 'var(--bg-tertiary,rgba(255,255,255,0.05))', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{series?.title}</div>
-                            <div>Bölüm {chapter?.chapter_number}{chapter?.title && !isDefaultTitle(chapter.title, chapter.chapter_number) ? ` — ${chapter.title}` : ''}</div>
-                        </div>
-
-                        {bugSuccess ? (
-                            <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                </div>
-                                <p style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6, fontSize: '1rem' }}>Teşekkürler!</p>
-                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: 20 }}>Hata bildiriminiz alındı. İnceleyip en kısa sürede düzelteceğiz.</p>
-                                <button onClick={closeBugModal} style={{ padding: '9px 24px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '0.9rem' }}>Kapat</button>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleBugSubmit}>
-                                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>
-                                    Hata Açıklaması <span style={{ color: '#ef4444' }}>*</span>
-                                </label>
-                                <textarea
-                                    value={bugDescription}
-                                    onChange={(e) => setBugDescription(e.target.value)}
-                                    placeholder="Gördüğünüz hatayı kısaca açıklayın... (örn: 3. sayfadan sonra resimler yüklenmiyor)"
-                                    rows={5}
-                                    required
-                                    style={{
-                                        width: '100%', boxSizing: 'border-box',
-                                        background: 'var(--bg-primary,#0d0d0d)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: 8, color: 'var(--text-primary)',
-                                        fontSize: '0.9rem', padding: '10px 12px',
-                                        resize: 'vertical', outline: 'none',
-                                        fontFamily: 'inherit', lineHeight: 1.5,
-                                        minHeight: 100,
-                                    }}
-                                    onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; }}
-                                    onBlur={(e) => { e.target.style.borderColor = 'var(--border-color)'; }}
-                                />
-                                {bugError && (
-                                    <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', fontSize: '0.82rem' }}>
-                                        {bugError}
-                                    </div>
-                                )}
-                                <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
-                                    <button type="button" onClick={closeBugModal} style={{ padding: '9px 20px', borderRadius: 8, background: 'var(--bg-tertiary,rgba(255,255,255,0.06))', color: 'var(--text-secondary)', fontWeight: 600, border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.88rem' }}>
-                                        İptal
-                                    </button>
-                                    <button type="submit" disabled={bugSubmitting || !bugDescription.trim()} style={{ padding: '9px 22px', borderRadius: 8, background: bugSubmitting || !bugDescription.trim() ? 'rgba(239,68,68,0.4)' : '#ef4444', color: '#fff', fontWeight: 700, border: 'none', cursor: bugSubmitting || !bugDescription.trim() ? 'not-allowed' : 'pointer', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 7, transition: 'background 0.2s' }}>
-                                        {bugSubmitting ? (
-                                            <><div style={{ width: 15, height: 15, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />Gönderiliyor...</>
-                                        ) : (
-                                            <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Gönder</>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-                    </div>
-                </div>,
-                document.body
-            )}
+            <ReaderBugModal
+                mounted={mounted}
+                showBugModal={showBugModal}
+                closeBugModal={closeBugModal}
+                series={series}
+                chapter={chapter}
+                bugSuccess={bugSuccess}
+                bugDescription={bugDescription}
+                setBugDescription={setBugDescription}
+                bugSubmitting={bugSubmitting}
+                bugError={bugError}
+                handleBugSubmit={handleBugSubmit}
+            />
 
             {/* ── OKUYUCU MODLARI ── */}
             {isNovelMode ? (
-                <div 
-                    className={`novel-mode-container novel-theme-${novelTheme}`}
-                    style={{ 
-                        fontFamily: novelFontFamily === 'serif' ? 'Georgia, serif' : 'Inter, system-ui, sans-serif',
-                        fontSize: `${novelFontSize}px`,
-                        lineHeight: novelLineHeight,
-                        textAlign: novelTextAlign,
-                        filter: brightness < 100 ? `brightness(${brightness}%)` : undefined,
-                        minHeight: '100vh',
-                        paddingBottom: 100,
-                    }}
-                >
-                    <div className="novel-content" onClick={handleReaderTap}>
-                        {paragraphs.map((pText, i) => (
-                            <div key={i} id={`p-${i}`} className="novel-paragraph" style={{ position: 'relative' }}>
-                                {/* GÜVENLİK DÜZELTMESİ: chapter.content hiçbir temizlemeden basılıyordu —
-                                    upload_chapters yetkisine sahip bir hesap (veya ele geçirilmiş hesap)
-                                    <script>/onerror= gibi payload'lar gömerse her okuyucuda çalışırdı. */}
-                                <div dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(pText) }} />
-                                <button 
-                                    className="inline-comment-btn" 
-                                    title="Bu paragrafa yorum yap"
-                                    onClick={(e) => { 
-                                        e.stopPropagation(); 
-                                        window.dispatchEvent(new CustomEvent('inline-comment', { detail: { paragraphIndex: i } }));
-                                        const sec = document.getElementById('comments-section');
-                                        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-                                    }}
-                                >
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                    <div style={{ marginTop: 60, padding: '0 20px', maxWidth: 800, margin: '60px auto 0' }}>
-                        <ReaderSupportCard appSettings={appSettings} />
-                        <EndChapterCard series={series} seriesSlug={seriesSlug} nextChapter={nextChapter} navigateTo={navigateTo} appSettings={appSettings} />
-                    </div>
-                    <div id="comments-section" className="page-container" style={{ marginTop: 40, maxWidth: 800, margin: '40px auto 0', paddingBottom: 120 }}>
-                        <Suspense fallback={<div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)' }}>Yorumlar yükleniyor...</div>}>
-                            <CommentSection chapterId={chapterId} seriesId={series.id} />
-                        </Suspense>
-                    </div>
-                </div>
+                <ReaderNovelView
+                    novelTheme={novelTheme}
+                    novelFontFamily={novelFontFamily}
+                    novelFontSize={novelFontSize}
+                    novelLineHeight={novelLineHeight}
+                    novelTextAlign={novelTextAlign}
+                    brightness={brightness}
+                    handleReaderTap={handleReaderTap}
+                    paragraphs={paragraphs}
+                    appSettings={appSettings}
+                    series={series}
+                    seriesSlug={seriesSlug}
+                    nextChapter={nextChapter}
+                    navigateTo={navigateTo}
+                    chapterId={chapterId}
+                />
             ) : isMangaMode ? (
                 <div className="manga-mode-container" style={{ filter: brightness < 100 ? `brightness(${brightness}%)` : undefined, position: 'relative' }}>
                     {showEndCard ? (
@@ -1389,229 +1010,6 @@ export function ReaderContent({ chapterId: propChapterId, initialData } = {}) {
     );
 }
 
-// ── OKUYUCU DESTEK KARTI ──
-function ReaderSupportCard({ appSettings }) {
-    if (appSettings.reader_support_enabled !== '1') return null;
-    const text = appSettings.reader_support_text || 'Her bölüm yaklaşık 5 TL AI maliyetiyle hazırlanıyor. Keyif aldıysan, küçük bir desteğin yeni bölümlerin gelmesine katkı sağlar.';
-    const btnText = appSettings.reader_support_button_text || 'Destek Ol';
-    const btnUrl = appSettings.reader_support_url || '#';
-    return (
-        <div style={{
-            margin: '40px auto 12px',
-            maxWidth: 500,
-            position: 'relative',
-            borderRadius: 24,
-            overflow: 'hidden',
-            padding: '2px',
-            background: 'rgba(30, 30, 35, 0.6)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-        }}>
-            {/* Dekoratif arka plan blob'ları */}
-            <div style={{
-                position: 'absolute', inset: 0, borderRadius: 24, overflow: 'hidden', pointerEvents: 'none', zIndex: 0,
-            }}>
-                <div style={{
-                    position: 'absolute', top: -30, left: -20, width: 160, height: 160,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
-                    filter: 'blur(24px)',
-                }}/>
-                <div style={{
-                    position: 'absolute', bottom: -20, right: -10, width: 130, height: 130,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%)',
-                    filter: 'blur(20px)',
-                }}/>
-            </div>
-            {/* Cam gövdesi */}
-            <div style={{
-                position: 'relative', zIndex: 1,
-                borderRadius: 22,
-                padding: '32px 28px 28px',
-                background: 'rgba(20, 20, 25, 0.5)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 16,
-                textAlign: 'center',
-            }}>
-                {/* İkon */}
-                <div style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: '50%',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 20px rgba(239, 68, 68, 0.15)',
-                    flexShrink: 0,
-                }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" stroke="none">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                </div>
-
-                {/* Başlık çizgisi */}
-                <div style={{
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: '#ef4444',
-                }}>Destek</div>
-
-                {/* Metin */}
-                <p style={{
-                    color: '#d1d5db',
-                    fontSize: '0.91rem',
-                    lineHeight: 1.75,
-                    margin: 0,
-                    fontWeight: 400,
-                    maxWidth: 380,
-                }}>
-                    {text}
-                </p>
-
-                {/* Ayırıcı */}
-                <div style={{
-                    width: '40%',
-                    height: 1,
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
-                }}/>
-
-                {/* Buton */}
-                <a
-                    href={btnUrl}
-                    target={btnUrl !== '#' ? '_blank' : undefined}
-                    rel={btnUrl !== '#' ? 'noopener noreferrer' : undefined}
-                    onClick={e => e.stopPropagation()}
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '12px 32px',
-                        borderRadius: 50,
-                        background: 'rgba(239, 68, 68, 0.15)',
-                        border: '1px solid rgba(239, 68, 68, 0.4)',
-                        color: '#ef4444',
-                        fontWeight: 700,
-                        fontSize: '0.88rem',
-                        textDecoration: 'none',
-                        letterSpacing: '0.04em',
-                        transition: 'transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease',
-                        cursor: 'pointer',
-                    }}
-                    onMouseEnter={e => {
-                        e.currentTarget.style.transform = 'translateY(-3px) scale(1.03)';
-                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)';
-                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(239, 68, 68, 0.3)';
-                    }}
-                    onMouseLeave={e => {
-                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                        e.currentTarget.style.boxShadow = 'none';
-                    }}
-                >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                    {btnText}
-                </a>
-            </div>
-        </div>
-    );
-}
-
-// ── BÖLÜM SONU KARTI (Next Chapter) ──
-function EndChapterCard({ series, seriesSlug, nextChapter, navigateTo, appSettings, goPrevPage }) {
-    const [navigating, setNavigating] = useState(false);
-    const router = useRouter();
-
-    return (
-        <div className="reader-end-card">
-            <div className="rec-bg" style={{ backgroundImage: `url(${series.cover_url || '/demo/cover1.jpg'})` }} />
-            <div className="rec-content">
-                {nextChapter ? (
-                    <>
-                        <div className="rec-label">{appSettings.lang_next_up || 'SIRADAKİ BÖLÜM'}</div>
-                        <div className="rec-title">{appSettings.lang_chapter_prefix || 'Bölüm'} {nextChapter.chapter_number}</div>
-                        <button 
-                            className="rec-btn" 
-                            disabled={navigating}
-                            onClick={(e) => { 
-                                e.stopPropagation();
-                                setNavigating(true);
-                                try { navigateTo(nextChapter); }
-                                catch (err) { console.error('Bölüm navigasyon hatası:', err); setNavigating(false); }
-                            }}
-                        >
-                            {navigating ? (
-                                <div className="spinner" style={{ width: 24, height: 24, borderWidth: 2 }} />
-                            ) : (
-                                <>
-                                    {appSettings.lang_read_chapter || 'Hemen Oku'}
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
-                                </>
-                            )}
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <div className="rec-label" style={{ color: 'var(--success)' }}>{appSettings.lang_up_to_date || 'GÜNCELSİNİZ'}</div>
-                        <div className="rec-title">{appSettings.lang_no_more_chapters || 'Şimdilik Başka Bölüm Yok'}</div>
-                    </>
-                )}
-
-                {/* Navigasyon butonları — her zaman göster */}
-                <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
-                    <Link
-                        href={`/seri/${seriesSlug}`}
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                            background: 'rgba(255,255,255,0.12)', color: '#fff',
-                            border: '1px solid rgba(255,255,255,0.18)',
-                            textDecoration: 'none', padding: '7px 16px',
-                            borderRadius: 20, fontSize: '0.78rem', fontWeight: 700,
-                            backdropFilter: 'blur(4px)', transition: 'all 0.2s',
-                            whiteSpace: 'nowrap',
-                        }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                        {appSettings.lang_back_to_series || 'Seriye Dön'}
-                    </Link>
-                    <button
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                            background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.65)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            textDecoration: 'none', padding: '7px 16px',
-                            borderRadius: 20, fontSize: '0.78rem', fontWeight: 600,
-                            backdropFilter: 'blur(4px)', transition: 'all 0.2s',
-                            whiteSpace: 'nowrap', cursor: 'pointer',
-                        }}
-                        onClick={e => { e.stopPropagation(); window.scrollTo(0, 0); router.push('/'); }}
-                    >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                        {appSettings.lang_go_home || 'Ana Sayfa'}
-                    </button>
-                </div>
-
-                {goPrevPage && (
-                    <button style={{ marginTop: 8, color: 'rgba(255,255,255,0.35)', fontSize: '0.72rem', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }} onClick={(e) => { e.stopPropagation(); goPrevPage(); }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg> Önceki Sayfaya Dön
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-}
-
 export default function ReaderPage({ chapterId } = {}) {
     return (
         <Suspense fallback={<div className="page-loading"><div className="spinner" /></div>}>
@@ -1619,3 +1017,4 @@ export default function ReaderPage({ chapterId } = {}) {
         </Suspense>
     );
 }
+

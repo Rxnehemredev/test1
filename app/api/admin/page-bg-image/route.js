@@ -1,5 +1,4 @@
-import { NextResponse } from 'next/server';
-import { requireAuth, hasAdminPanelAccess } from '@/lib/auth';
+import { requireAuth, hasAdminPanelAccess, hasPermission } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { uploadToImgbb } from '@/lib/imgbb';
 import { assertValidImage, MIME_TO_SHARP_FORMAT } from '@/lib/imageValidation';
@@ -16,8 +15,10 @@ export async function POST(request) {
         const user = await requireAuth(request);
         const db = await getDb();
         if (!await hasAdminPanelAccess(user, db)) throw new Error('Forbidden');
+        const canManageBg = ['admin', 'manager'].includes(user.role) || await hasPermission(user, 'manage_settings', db) || await hasPermission(user, 'manage_pages', db);
+        if (!canManageBg) throw new Error('Forbidden');
     } catch {
-        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 403 });
     }
 
     try {
@@ -78,8 +79,10 @@ export async function DELETE(request) {
         const user = await requireAuth(request);
         const db = await getDb();
         if (!await hasAdminPanelAccess(user, db)) throw new Error('Forbidden');
+        const canManageBg = ['admin', 'manager'].includes(user.role) || await hasPermission(user, 'manage_settings', db) || await hasPermission(user, 'manage_pages', db);
+        if (!canManageBg) throw new Error('Forbidden');
     } catch {
-        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
+        return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 403 });
     }
 
     try {

@@ -34,8 +34,15 @@ chk(new Set([env.JWT_SECRET, env.ENCRYPTION_KEY, env.IMAGE_PROXY_SECRET, env.PRO
     'Sırlar birbirinden farklı', 'Aynı değer birden fazla sır için kullanılmış');
 chk((env.ADMIN_PASSWORD || '').length >= 14, 'ADMIN_PASSWORD ≥ 14 karakter', 'ADMIN_PASSWORD en az 14 karakter olmalı');
 if (!env.CRON_SECRET && !env.BLOG_CRON_SECRET) wrn('CRON_SECRET tanımsız → zamanlanmış işler (blog kuyruğu, scraper) çalışmaz');
-if (!(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN)) ok('Redis yok → bellek deposu (tek sunucuda doğru ve tam çalışır)');
-else wrn('Upstash Redis tanımlı: her istekte ek ağ gecikmesi. Tek sunucuda bellek deposu yeterli ve daha hızlı.');
+if (!(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN)) {
+  if (env.ALLOW_IN_MEMORY_RATE_LIMIT === '1' || env.ALLOW_IN_MEMORY_RATE_LIMIT === 'true') {
+    ok('Redis yok ama ALLOW_IN_MEMORY_RATE_LIMIT=1 aktif → tek süreçli yerel bellek deposu');
+  } else {
+    wrn('Upstash Redis tanımsız. Dağıtık/serverless production için zorunludur (yalnızca tek VPS kurulumunda ALLOW_IN_MEMORY_RATE_LIMIT=1 kullanılabilir)');
+  }
+} else {
+  ok('Upstash Redis tanımlı (dağıtık rate limiting ve Threat Shield senkron)');
+}
 
 for (const f of ['/etc/asteria/asteria.env', '/etc/nginx/asteria-proxy-secret.conf']) {
   try {

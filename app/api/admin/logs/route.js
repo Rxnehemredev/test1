@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { requireAuth, hasAdminPanelAccess } from '@/lib/auth';
+import { requireAuth, hasAdminPanelAccess, hasPermission } from '@/lib/auth';
 import { createRateLimiter } from '@/lib/ratelimit';
 const adminLimiter = createRateLimiter(100, 60000);
 
@@ -13,6 +13,10 @@ export async function GET(request) {
     const db = await getDb();
     if (!await hasAdminPanelAccess(user, db)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const canViewLogs = ['admin', 'manager'].includes(user.role) || await hasPermission(user, 'view_audit_log', db);
+    if (!canViewLogs) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
     const logs = await db.prepare(`
       SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 200

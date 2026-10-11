@@ -129,7 +129,7 @@ export default function AdminBlogsPage() {
     async function processNow() {
         setProcessBusy(true);
         try {
-            const res = await authFetch('/api/cron/blog-queue?batch=1', { method: 'POST' });
+            const res = await authFetch('/api/admin/blogs/queue/process?batch=1', { method: 'POST' });
             const data = await res.json();
             if (!res.ok) { showToast(data.error || 'İşlenemedi'); return; }
             if (data.processed === 0) { showToast('Kuyruk zaten boş'); }

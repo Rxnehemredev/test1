@@ -17,69 +17,10 @@ const CHAPTERS_INITIAL = 20;
 const CHAPTERS_PER_LOAD = 20;
 const CHAPTERS_SCROLL_HEIGHT = 480; // px — scroll modunda kutu yüksekliği (tüm bölümler bu kutu içinde)
 
-const STATUS_TR = { 'ongoing': 'Devam Ediyor', 'completed': 'Tamamlandı', 'hiatus': 'Ara Verildi', 'cancelled': 'İptal Edildi', 'current': 'Güncel' };
-
-const GENRE_TR = {
-    'Action': 'Aksiyon', 'Adventure': 'Macera', 'Comedy': 'Komedi', 'Drama': 'Drama',
-    'Fantasy': 'Fantastik', 'Historical': 'Tarihi', 'Horror': 'Korku', 'Isekai': 'Isekai',
-    'Martial Arts': 'Dövüş Sanatları', 'Mystery': 'Gizem', 'Reincarnation': 'Reenkarnasyon',
-    'Romance': 'Romantik', 'School': 'Okul', 'Sci-Fi': 'Bilim Kurgu',
-    'Supernatural': 'Doğaüstü', 'Thriller': 'Gerilim',
-    'Ecchi': 'Ecchi', 'Harem': 'Harem', 'Josei': 'Josei', 'Mature': 'Yetişkin',
-    'Mecha': 'Mecha', 'Psychological': 'Psikolojik', 'Seinen': 'Seinen', 'Shoujo': 'Shoujo',
-    'Shounen': 'Shounen', 'Slice of Life': 'Günlük Yaşam', 'Sports': 'Spor',
-    'Tragedy': 'Trajedi', 'Webtoon': 'Webtoon', 'Manhwa': 'Manhwa', 'Manhua': 'Manhua'
-};
-
-function isDefaultTitle(title, chNum) {
-    if (!title) return true;
-    const cleanTitle = title.trim().toLowerCase();
-    const cleanNum = String(chNum).trim().toLowerCase();
-    const normalized = cleanTitle.replace(/\s+/g, ' ');
-    const defaults = [
-        `chapter ${cleanNum}`,
-        `ch. ${cleanNum}`,
-        `ch.${cleanNum}`,
-        `bölüm ${cleanNum}`,
-        `böl. ${cleanNum}`,
-        `böl.${cleanNum}`,
-        `bö. ${cleanNum}`,
-        `bö.${cleanNum}`,
-        `${cleanNum}. bölüm`,
-        `${cleanNum}.bölüm`,
-        `bölüm: ${cleanNum}`,
-        `bölüm:${cleanNum}`,
-        `bölüm-${cleanNum}`,
-        `bölüm_${cleanNum}`,
-        cleanNum
-    ];
-    return defaults.includes(normalized);
-}
-
-function capitalizeFirst(str) {
-    if (!str) return '';
-    let first = str.charAt(0);
-    if (first === 'i') first = 'İ';
-    else if (first === 'ı') first = 'I';
-    else if (first === 'ş') first = 'Ş';
-    else if (first === 'ğ') first = 'Ğ';
-    else if (first === 'ü') first = 'Ü';
-    else if (first === 'ö') first = 'Ö';
-    else if (first === 'ç') first = 'Ç';
-    else first = first.toUpperCase();
-    return first + str.slice(1);
-}
-
-function formatType(type) {
-    if (!type) return '';
-    const lower = type.toLowerCase();
-    if (lower === 'manga') return 'Manga';
-    if (lower === 'manhwa') return 'Manhwa';
-    if (lower === 'manhua') return 'Manhua';
-    if (lower === 'webtoon') return 'Webtoon';
-    if (lower === 'novel') return 'Roman';
-    return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-}
+import { STATUS_TR } from '@/lib/constants/status';
+import { GENRE_TR } from '@/lib/constants/genres';
+import { isDefaultTitle } from '@/lib/utils/titles';
+import { capitalizeFirst, formatType } from '@/lib/utils/formatters';
 
 
 

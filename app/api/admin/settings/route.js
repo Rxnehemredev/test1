@@ -5,6 +5,7 @@ import { invalidateSettingsCache } from '@/lib/settings-cache';
 import { createRateLimiter } from '@/lib/ratelimit';
 import { isSameOrigin } from '@/lib/security/sameOrigin';
 import { hasPermission } from '@/lib/auth';
+import { validateCustomBodyJs } from '@/lib/security/scriptSanitizer';
 const adminLimiter = createRateLimiter(100, 60000);
 
 
@@ -34,6 +35,15 @@ export async function POST(request) {
         }
         // Hassas anahtarlar (rol tanımları, API anahtarları, sistem sayacı) yalnızca admin tarafından değiştirilebilir
         const SENSITIVE_KEY = /^(custom_roles|content_version)$|(secret|token|password|api_key|apikey|private|service_role)/i;
+        if ('custom_body_js' in body) {
+            if (user.role !== 'admin') {
+                return NextResponse.json({ success: false, error: 'Özel JavaScript kodunu yalnızca süper admin düzenleyebilir.' }, { status: 403 });
+            }
+            const scriptCheck = validateCustomBodyJs(body.custom_body_js);
+            if (!scriptCheck.valid) {
+                return NextResponse.json({ success: false, error: scriptCheck.error }, { status: 400 });
+            }
+        }
         for (const [key, value] of Object.entries(body)) {
             if (!/^[\w.:\-]{1,120}$/.test(key) || key === '__proto__') {
                 return NextResponse.json({ success: false, error: `Geçersiz ayar anahtarı: ${key.slice(0, 40)}` }, { status: 400 });

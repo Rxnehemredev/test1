@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from './AuthProvider';
 import { getCultivationData } from '@/lib/gamification';
 import BadgeIcon from './BadgeIcon';
+import { timeAgoVerbose as timeAgo } from '@/lib/utils/dates';
 
 const POLL_MS = 12000;
 const MAX_LEN = 500;
@@ -24,17 +25,6 @@ function cleanGifUrl(raw) {
 function parseGifMessage(text) {
     const m = /^!\[gif\]\((https:\/\/[^\s)]+)\)$/.exec((text || '').trim());
     return m ? cleanGifUrl(m[1]) : null;
-}
-
-function timeAgo(d) {
-    if (!d) return '';
-    const utcStr = typeof d === 'string' && !d.endsWith('Z') ? d.replace(' ', 'T') + 'Z' : d;
-    const m = Math.floor((Date.now() - new Date(utcStr).getTime()) / 60000);
-    if (m < 1) return 'az önce';
-    if (m < 60) return `${m} dakika`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h} saat`;
-    return `${Math.floor(h / 24)} gün`;
 }
 
 // Rütbe ikonu — havacılık/gökyüzü rütbe seti — profile sayfasındaki RankIcon ile aynı ikon seti

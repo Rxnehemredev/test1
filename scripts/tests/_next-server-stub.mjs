@@ -15,3 +15,12 @@ export class NextResponse extends Response {
         return r;
     }
 }
+
+export function after(fn) {
+    if (typeof fn === 'function') {
+        try {
+            const res = fn();
+            if (res && typeof res.catch === 'function') res.catch(() => {});
+        } catch {}
+    }
+}

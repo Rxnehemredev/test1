@@ -46,7 +46,7 @@ export async function GET(request) {
         // ayar, açıkça güvenli olduğu bilinen *_site_key / *_public_key
         // dışında varsayılan olarak gizleniyor (blocklist yerine "aksi
         // ispatlanmadıkça gizli" mantığı).
-        const PRIVATE_KEY = /(secret|token|password|passwd|private|service_role|webhook|smtp)/i;
+        const PRIVATE_KEY = /(secret|token|password|passwd|private|service_role|webhook|smtp|google_indexing)/i;
         const PUBLIC_KEY_SUFFIX = /_site_key$|_public_key$/i;
         for (const k of Object.keys(settings)) {
             const looksLikeKeyButNotPublic = /key/i.test(k) && !PUBLIC_KEY_SUFFIX.test(k);
