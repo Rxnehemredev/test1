@@ -100,6 +100,10 @@ export async function middleware(request) {
     try {
         threatState = await checkRequest(clientIp);
     } catch (err) {
+        if (err?.message?.includes('UPSTASH_REDIS_REST_URL')) {
+            console.error('[ASTERIA-SHIELD] YAPILANDIRMA HATASI:', err.message);
+            return deny(503, 'Service Unavailable');
+        }
         console.error('[middleware] threatShield hatası, katman atlanıyor:', err);
     }
     if (threatState.banned) {
@@ -208,6 +212,10 @@ export async function middleware(request) {
             }
         }
     } catch (err) {
+        if (err?.message?.includes('UPSTASH_REDIS_REST_URL')) {
+            console.error('[ratelimit] YAPILANDIRMA HATASI:', err.message);
+            return deny(503, 'Service Unavailable');
+        }
         console.error('[middleware] rate limiter hatası, katman atlanıyor:', err);
     }
 

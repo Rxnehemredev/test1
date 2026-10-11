@@ -21,35 +21,15 @@ const DEFAULT_SERIES_EMOJIS = [
 ];
 const REPORT_REASONS = ['Spam veya yanıltıcı', 'Taciz veya zorbalık', 'Nefret söylemi', 'Uygunsuz içerik', 'Uyarısız spoiler', 'Diğer'];
 
-const ThumbUpIcon = ({ filled }) => <svg viewBox="0 0 24 24" width="16" height="16" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" /></svg>;
-const ThumbDownIcon = ({ filled }) => <svg viewBox="0 0 24 24" width="16" height="16" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M17 14V2M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z" /></svg>;
-const ReplyIcon = () => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 17 4 12 9 7" /><path d="M20 18v-2a4 4 0 0 0-4-4H4" /></svg>;
-const MoreIcon = () => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>;
-const EditIcon = () => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>;
-const TrashIcon = () => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>;
-const FlagIcon = () => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>;
-const BoldIcon = () => <span style={{fontWeight:'900', fontFamily:'serif', fontSize:'13px', lineHeight:1}}>B</span>;
-const ItalicIcon = () => <span style={{fontStyle:'italic', fontFamily:'serif', fontSize:'13px', lineHeight:1}}>I</span>;
-const StrikeIcon = () => <span style={{textDecoration:'line-through', fontSize:'13px', lineHeight:1}}>S</span>;
-// InlineSpoilerIcon = pipes icon for ||spoiler||
-const InlineSpoilerIcon = () => (
-    <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '12px', letterSpacing: '-2px', lineHeight: 1 }}>||</span>
-);
-// SpoilerTagIcon = eye-off for whole-comment spoiler tag
-const SpoilerTagIcon = () => (
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M2 2l20 20"/>
-    </svg>
-);
-const GifIcon = () => (
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="3"/>
-        <path d="M8 12h4M10 10v4"/>
-        <path d="M15 12h1.5a1.5 1.5 0 0 0 0-3H15v6"/>
-        <text x="4" y="16" fontSize="8" fill="currentColor" stroke="none" fontWeight="900">GIF</text>
-    </svg>
-);
-const PinIcon = () => <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>;
+import {
+    ThumbUpIcon, ThumbDownIcon, ReplyIcon, MoreIcon, EditIcon,
+    TrashIcon, FlagIcon, PinIcon, SpoilerTagIcon, GifIcon
+} from '@/components/icons/CommentIcons';
+import { renderMarkdown } from '@/lib/comments/renderMarkdown';
+import CommentToolbar from '@/components/comments/CommentToolbar';
+import GifPickerModal from '@/components/comments/GifPickerModal';
+import CommentReportModal from '@/components/comments/CommentReportModal';
+import { timeAgoCompact as timeAgo } from '@/lib/utils/dates';
 
 function UserBadges({ badges }) {
     if (!badges || badges.length === 0) return null;
@@ -456,15 +436,7 @@ useEffect(() => {
         setReportModal(null); setReportReason('');
     }
 
-    function timeAgo(d) {
-        if (!d) return '';
-        const utcStr = typeof d === 'string' && !d.endsWith('Z') ? d + 'Z' : (typeof d === 'string' ? d : String(d));
-        const m = Math.floor((Date.now() - new Date(utcStr).getTime()) / 60000);
-        if (m < 60) return `${Math.max(1,m)}dk önce`;
-        const h = Math.floor(m / 60);
-        if (h < 24) return `${h}sa önce`;
-        return `${Math.floor(h / 24)}g önce`;
-    }
+
 
     function getCount(c, emoji) { const r = (c.reactions || []).find(x => x.emoji === emoji); return r ? r.count : 0; }
     function isActive(c, emoji) { const r = (c.reactions || []).find(x => x.emoji === emoji); return r && user && r.user_ids?.split(',').includes(String(user.id)); }
@@ -499,41 +471,7 @@ useEffect(() => {
         }, 0);
     }
 
-    function renderMarkdown(rawText) {
-        if (!rawText) return null;
-        // GÜVENLİK: & < > " ' hepsi escape edilir (attribute'tan çıkıp event handler
-        // enjekte etmeyi engeller). Ayrıca görseller, ** * ~~ || biçimlendirmelerinden ÖNCE
-        // placeholder'a alınır: aksi halde URL/alt içindeki ||..|| veya *..* HTML üretip
-        // src/alt attribute'unu bozabiliyordu. Görsel etiketi en son, güvenli biçimde kurulur.
-        const images = [];
-        let html = String(rawText)
-            .replace(/\u0000/g, '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/!\[([^\]]*)\]\(([^)\s]*)\)/g, (match, alt, url) => {
-                // GÜVENLİK / GİZLİLİK: Yalnızca izin listesindeki servislerin (GIPHY, imgbb)
-                // https görselleri gösterilir. Rastgele bir siteye istek atan görsel (IP logger)
-                // yorumu açan herkesin IP'sini o siteye sızdırırdı. İzin verilmeyen görseller
-                // yüklenmez; yerine kısa bir uyarı gösterilir (eski yorumlar da bu kurala tabidir).
-                if (!isAllowedImageUrl(url.replace(/&amp;/g, '&'))) {
-                    images.push('<em style="opacity:0.6;font-size:0.85em;">[izin verilmeyen görsel kaldırıldı]</em>');
-                    return `\u0000IMG${images.length - 1}\u0000`;
-                }
-                const safeAlt = alt.replace(/[|*~]/g, '');
-                images.push(`<img src="${url}" alt="${safeAlt}" referrerpolicy="no-referrer" style="max-width:100%; display:block; border-radius:4px; margin-top:8px;" decoding="async" loading="lazy" />`);
-                return `\u0000IMG${images.length - 1}\u0000`;
-            })
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/~~(.*?)~~/g, '<del>$1</del>')
-            .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler-text" onclick="this.classList.toggle(&#39;revealed&#39;)" title="Click to reveal spoiler">$1</span>')
-            .replace(/\n/g, '<br />')
-            .replace(/\u0000IMG(\d+)\u0000/g, (m, i) => images[Number(i)] || '');
-        return <div dangerouslySetInnerHTML={{ __html: html }} />;
-    }
+
 
     function getRankBadgeParams(rank) {
         if (!rank) return null;
@@ -551,63 +489,7 @@ useEffect(() => {
         setShownReplies(newSet);
     }
 
-    // Shared toolbar component for both new comment and reply
-    function CommentToolbar({ onBold, onItalic, onStrike, onInlineSpoiler, isSpoilerTag, onToggleSpoilerTag, charCount, maxChars, onSubmit, submitLabel, disabled, onCancel, onGif }) {
-        return (
-            <div className="asura-comment-toolbar">
-                <div className="asura-toolbar-left">
-                    <button type="button" className="asura-toolbar-btn" title="Kalın" onClick={onBold}><BoldIcon/></button>
-                    <button type="button" className="asura-toolbar-btn" title="İtalik" onClick={onItalic}><ItalicIcon/></button>
-                    <button type="button" className="asura-toolbar-btn" title="Üstü Çizili" onClick={onStrike}><StrikeIcon/></button>
-                    <button
-                        type="button"
-                        className="asura-toolbar-btn"
-                        title="Satır içi spoiler (||metin||)"
-                        onClick={onInlineSpoiler}
-                        style={{ fontFamily: 'monospace', letterSpacing: '-1px', fontWeight: 800, fontSize: '13px' }}
-                    >
-                        <InlineSpoilerIcon/>
-                    </button>
-                    {onGif && (
-                        <button type="button" className="asura-toolbar-btn" title="GIF Ekle" onClick={onGif}>
-                            <GifIcon/>
-                        </button>
-                    )}
-                    <div style={{ width: 1, background: 'var(--border)', margin: '0 4px', alignSelf: 'stretch' }} />
-                    <button
-                        type="button"
-                        className="asura-toolbar-btn"
-                        title="Yorumun tamamını spoiler olarak işaretle"
-                        onClick={onToggleSpoilerTag}
-                        style={isSpoilerTag ? {
-                            color: 'var(--warning, #f59e0b)',
-                            background: 'rgba(245,158,11,0.15)',
-                            borderRadius: 4,
-                        } : {}}
-                    >
-                        <SpoilerTagIcon/>
-                        <span style={{
-                            fontSize: '0.7rem',
-                            marginLeft: 3,
-                            color: isSpoilerTag ? 'var(--warning, #f59e0b)' : 'var(--text-muted)',
-                            fontWeight: isSpoilerTag ? 700 : 400
-                        }}>
-                            {isSpoilerTag ? 'Spoiler ✓' : 'Spoiler'}
-                        </span>
-                    </button>
-                </div>
-                <div className="asura-toolbar-right">
-                    {maxChars && charCount > 0 && <span className="asura-char-count">{charCount}/{maxChars}</span>}
-                    {onCancel && (
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={onCancel} style={{ fontSize: '0.75rem' }}>İptal</button>
-                    )}
-                    <button type="button" className="asura-btn-post" disabled={disabled} onClick={(e) => { e.preventDefault(); if (onSubmit) onSubmit(e); }} onMouseDown={(e) => { e.preventDefault(); if (onSubmit) onSubmit(e); }}>
-                        {submitLabel}
-                    </button>
-                </div>
-            </div>
-        );
-    }
+
 
     function renderComment(c, isReply = false) {
         const isOwner = user && c.user_id === user.id;
@@ -1072,115 +954,32 @@ useEffect(() => {
                 document.body
             )}
 
-            {/* Report Modal — Portal to body */}
-            {mounted && reportModal && createPortal(
-                <div className="modal-overlay" onClick={() => setReportModal(null)}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <h3><FlagIcon /> Yorumu Bildir</h3>
-                        <p>Bu yorumu neden bildiriyorsunuz?</p>
-                        <div className="form-group">
-                            <select className="form-input" value={reportReason} onChange={e => setReportReason(e.target.value)}>
-                                <option value="">Bir neden seçin...</option>
-                                {REPORT_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label>Detaylar (isteğe bağlı)</label>
-                            <textarea className="form-input" rows={2} placeholder="Daha fazla detay..." value={reportDetails} onChange={e => setReportDetails(e.target.value)} style={{ resize: 'vertical' }} />
-                        </div>
-                        <div className="modal-actions">
-                            <button className="btn btn-ghost btn-sm" onClick={() => setReportModal(null)}>İptal</button>
-                            <button className="btn btn-danger btn-sm" onClick={handleReportSubmit} disabled={!reportReason}>Gönder</button>
-                        </div>
-                    </div>
-                </div>,
-                document.body
+            {/* Report Modal */}
+            {mounted && (
+                <CommentReportModal
+                    isOpen={Boolean(reportModal)}
+                    onClose={() => setReportModal(null)}
+                    reportReason={reportReason}
+                    setReportReason={setReportReason}
+                    reportDetails={reportDetails}
+                    setReportDetails={setReportDetails}
+                    onSubmit={handleReportSubmit}
+                />
             )}
 
-            {/* GIF Modal — Portal to body */}
-            {mounted && gifModal && createPortal(
-                <div className="modal-overlay" onClick={() => setGifModal(false)}>
-                    <div className="modal gif-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, width: '95vw' }}>
-                        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                            <GifIcon />
-                            GIF Ekle
-                        </h3>
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                            <input
-                                ref={gifSearchRef}
-                                type="text"
-                                className="form-input"
-                                placeholder="GIPHY ile GIF ara..."
-                                value={gifSearch}
-                                onChange={e => setGifSearch(e.target.value)}
-                                style={{ flex: 1 }}
-                            />
-                            <button
-                                className="btn btn-primary btn-sm"
-                                onClick={() => searchGifs(gifSearch)}
-                                disabled={gifLoading}
-                            >
-                                {gifLoading ? '...' : 'Ara'}
-                            </button>
-                        </div>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                            gridAutoRows: '100px',
-                            gap: 8,
-                            maxHeight: 320,
-                            overflowY: 'auto',
-                            borderRadius: 8,
-                            padding: '4px'
-                        }}>
-                            {gifLoading ? (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>
-                                    <div className="spinner" style={{ margin: '0 auto' }} />
-                                </div>
-                            ) : gifResults.length === 0 ? (
-                                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                                    GIF bulunamadı. Farklı bir arama deneyin.
-                                </div>
-                            ) : gifResults.map(gif => {
-                                const media = gif.media_formats?.gif || gif.media_formats?.tinygif;
-                                if (!media) return null;
-                                const preview = gif.media_formats?.tinygif || gif.media_formats?.nanogif || media;
-                                return (
-                                    <button
-                                        key={gif.id}
-                                        onClick={() => insertGif(media.url)}
-                                        style={{
-                                            border: '2px solid transparent',
-                                            borderRadius: 6,
-                                            overflow: 'hidden',
-                                            cursor: 'pointer',
-                                            background: 'var(--bg-secondary)',
-                                            padding: 0,
-                                            height: '100%',
-                                            width: '100%',
-                                            transition: 'border-color 0.15s',
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                                        onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-                                    >
-                                        <img
-                                            src={preview.url}
-                                            alt={gif.content_description || 'gif'}
-                                            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                                            loading="lazy" decoding="async" />
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <div style={{ marginTop: 12, textAlign: 'right' }}>
-                            <button className="btn btn-ghost btn-sm" onClick={() => setGifModal(false)}>İptal</button>
-                        </div>
-                        <div style={{ marginTop: 8, textAlign: 'center', fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                            GIPHY tarafından desteklenmektedir
-                        </div>
-                    </div>
-                </div>,
-                document.body
+            {/* GIF Modal */}
+            {mounted && (
+                <GifPickerModal
+                    isOpen={gifModal}
+                    onClose={() => setGifModal(false)}
+                    gifSearch={gifSearch}
+                    setGifSearch={setGifSearch}
+                    gifResults={gifResults}
+                    gifLoading={gifLoading}
+                    searchGifs={searchGifs}
+                    onSelectGif={insertGif}
+                    searchRef={gifSearchRef}
+                />
             )}
 
             {/* Image URL Modal — Portal to body */}

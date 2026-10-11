@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { getVerifiedUser, hasAdminPanelAccess } from '@/lib/auth';
+import { getVerifiedUser, hasAdminPanelAccess, hasPermission } from '@/lib/auth';
 import { batchQueue } from '@/lib/queue';
 import { createRateLimiter } from '@/lib/ratelimit';
 import { clampInt } from '@/lib/security/sqlWhitelist';
@@ -19,6 +19,10 @@ export async function GET(request) {
         const { user } = result;
         if (!await hasAdminPanelAccess(user, db)) {
             return NextResponse.json({ error: 'Yetkisiz' }, { status: 403 });
+        }
+        const canViewTraffic = ['admin', 'manager'].includes(user.role) || await hasPermission(user, 'view_traffic', db) || await hasPermission(user, 'manage_settings', db);
+        if (!canViewTraffic) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const { searchParams } = new URL(request.url);

@@ -15,7 +15,7 @@ case "$JOB" in
 esac
 
 # Gizli anahtarları komut satırında (ps'te görünür) değil, stdin'den başlık dosyası olarak ver.
-curl --fail --silent --show-error --max-time 300 \
+curl -X POST --fail --silent --show-error --max-time 300 \
   -H @- "$URL" <<HDR
 Host: ${HOST}
 User-Agent: AsteriaCron/1.0

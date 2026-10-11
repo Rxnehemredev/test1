@@ -8,6 +8,9 @@ import { useSettings } from './SettingsProvider';
 import TurnstileWidget from './TurnstileWidget';
 import { genreToSlug } from '@/lib/genreSlug';
 import { safeHref } from '@/lib/security/safeUrl';
+import NavbarAuthModal from '@/components/navbar/NavbarAuthModal';
+import NavbarMobileDrawer from '@/components/navbar/NavbarMobileDrawer';
+import NavbarSearchOverlay from '@/components/navbar/NavbarSearchOverlay';
 
 export default function Navbar({ siteSettings = {} }) {
     const router = useRouter();
@@ -662,192 +665,53 @@ export default function Navbar({ siteSettings = {} }) {
                     </div>
                 </div>
 
-                {searchOpen && (
-                    <div className="search-overlay">
-                        <div className="search-bar-container">
-                            <form onSubmit={handleSearch} className="search-bar-expanded">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-                                <input
-                                    type="text"
-                                    placeholder="Manga serisi ara..."
-                                    value={searchQuery}
-                                    onChange={handleSearchChange}
-                                    autoFocus
-                                />
-                                <button type="button" onClick={() => { setSearchOpen(false); setLiveResults([]); }} className="search-close">✕</button>
-                            </form>
-                            {liveResults.length > 0 && (
-                                <div className="live-search-dropdown">
-                                    {liveResults.map(s => (
-                                        <Link key={s.id} href={`/seri/${s.slug || s.id}`} className="live-search-item" onClick={() => { setSearchOpen(false); setLiveResults([]); }}>
-                                            <img src={s.cover_url || '/demo/cover1.jpg'} alt={`${s.title || 'Seri'} kapak görseli`} decoding="async" />
-                                            <div className="ls-info">
-                                                <span className="ls-title">{s.title}</span>
-                                                <span className="ls-meta">{parseGenres(s.genres).slice(0, 2).join(', ')} · {s.chapterCount || 0} bölüm</span>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                    <Link href={`/seri?search=${encodeURIComponent(searchQuery)}`} className="live-search-item" style={{ justifyContent: 'center', fontWeight: 600, color: 'var(--primary)' }} onClick={() => { setSearchOpen(false); setLiveResults([]); }}>
-                                        Tüm sonuçları görüntüle →
-                                    </Link>
-                                </div>
-                            )}
-                            {liveLoading && searchQuery.trim() && (
-                                <div className="live-search-dropdown" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                                    Aranıyor...
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+                <NavbarSearchOverlay
+                    isOpen={searchOpen}
+                    onClose={() => { setSearchOpen(false); setLiveResults([]); }}
+                    searchQuery={searchQuery}
+                    handleSearch={handleSearch}
+                    handleSearchChange={handleSearchChange}
+                    liveResults={liveResults}
+                    liveLoading={liveLoading}
+                    parseGenres={parseGenres}
+                />
             </nav>
 
             {/* Mobile nav panel – only for non-logged-in users */}
-            {mobileMenuOpen && !user && !loading && (
-                <>
-                    <div className="mobile-nav-overlay" onClick={closeMobileMenu} />
-                    <div className="mobile-nav-panel">
-                        <button
-                            className="mobile-nav-close-btn"
-                            onClick={closeMobileMenu}
-                            aria-label="Menüyü kapat"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                        </button>
-                        {/* navMenuItems'tan (bkz. yukarısı) — admin panelden eklenen her link (Blog dahil) burada da görünür */}
-                        {navMenuItems.map((item, i) => (
-                            <Link key={i} href={safeHref(item.url)} className="mobile-nav-item" onClick={closeMobileMenu}>
-                                {navItemIcon(item.url)}
-                                {item.label}
-                            </Link>
-                        ))}
-                        <div className="mobile-nav-divider" />
-                        <button className="mobile-nav-item" onClick={() => { closeMobileMenu(); openAuthModal('login'); }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" /></svg>
-                            Giriş Yap
-                        </button>
-                        <button className="mobile-nav-item mobile-nav-signup" onClick={() => { closeMobileMenu(); openAuthModal('register'); }}>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>
-                            Kayıt Ol
-                        </button>
-                    </div>
-                </>
+            {!user && !loading && (
+                <NavbarMobileDrawer
+                    isOpen={mobileMenuOpen}
+                    onClose={closeMobileMenu}
+                    navMenuItems={navMenuItems}
+                    navItemIcon={navItemIcon}
+                    openAuthModal={openAuthModal}
+                />
             )}
 
-            {/* Auth Modal - Glassmorphism Popup */}
-            {authMounted && authModal && createPortal(
-                <div
-                    className="auth-modal-overlay"
-                    onClick={(e) => { if (e.target === e.currentTarget) closeAuthModal(); }}
-                >
-                    <div className="auth-modal-card">
-                        {/* Tab switcher */}
-                        <div className="auth-modal-tabs">
-                            <button
-                                className={`auth-modal-tab ${authModal === 'login' ? 'active' : ''}`}
-                                onClick={() => { setAuthModal('login'); setAuthError(''); setAuthTurnstileToken(''); }}
-                            >Giriş Yap</button>
-                            <button
-                                className={`auth-modal-tab ${authModal === 'register' ? 'active' : ''}`}
-                                onClick={() => { setAuthModal('register'); setAuthError(''); setAuthTurnstileToken(''); }}
-                            >Kayıt Ol</button>
-                        </div>
-
-                        <button className="auth-modal-close" onClick={closeAuthModal} aria-label="Kapat">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        </button>
-
-                        {authError && (
-                            <div
-                                className="alert alert-error"
-                                role="alert"
-                                aria-live="polite"
-                                style={{ marginBottom: 16, fontSize: '0.82rem' }}
-                            >{authError}</div>
-                        )}
-
-                        {authModal === 'login' ? (
-                            <form onSubmit={handleAuthLogin}>
-                                <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 4 }}>Tekrar Hoş Geldiniz</h2>
-                                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{settings?.auth_subtitle_login || 'Okumaya devam etmek için giriş yapın'}</p>
-                                </div>
-                                <div className="form-group">
-                                    <label>E-posta</label>
-                                    <input type="email" className="form-input" placeholder="eposta@adresiniz.com"
-                                        value={authEmail} onChange={e => setAuthEmail(e.target.value)} required autoComplete="off" />
-                                </div>
-                                <div className="form-group">
-                                    <label>Şifre</label>
-                                    <input type="password" className="form-input" placeholder="••••••••"
-                                        value={authPassword} onChange={e => setAuthPassword(e.target.value)} required autoComplete="off" />
-                                </div>
-                                {settings?.turnstile_site_key && process.env.NEXT_PUBLIC_DISABLE_TURNSTILE !== '1' && (
-                                    <TurnstileWidget
-                                        siteKey={settings.turnstile_site_key}
-                                        onVerify={(token) => setAuthTurnstileToken(token || '')}
-                                        onError={() => setAuthError('Doğrulama hatası. Lütfen sayfayı yenileyin.')}
-                                    />
-                                )}
-                                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }} disabled={isFormSubmitting || (settings?.turnstile_site_key && !authTurnstileToken && process.env.NEXT_PUBLIC_DISABLE_TURNSTILE !== '1')}>
-                                    {isFormSubmitting ? 'Giriş yapılıyor...' : 'Giriş Yap'}
-                                </button>
-                                <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 16 }}>
-                                    Hesabınız yok mu?{' '}
-                                    <button type="button" style={{ background: 'none', border: 'none', color: 'var(--accent-light)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, padding: 0 }}
-                                        onClick={() => { setAuthModal('register'); setAuthError(''); setAuthTurnstileToken(''); }}>
-                                        Kayıt Ol
-                                    </button>
-                                </p>
-                            </form>
-                        ) : (
-                            <form onSubmit={handleAuthRegister}>
-                                <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 4 }}>Hesap Oluştur</h2>
-                                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{settings?.auth_subtitle_register || 'Dilediğiniz dilde manga okuyun'}</p>
-                                </div>
-                                <div className="form-group">
-                                    <label>Kullanıcı Adı</label>
-                                    <input type="text" className="form-input" placeholder="kullanici_adiniz"
-                                        value={authUsername} onChange={e => setAuthUsername(e.target.value)} required minLength={3} autoComplete="off" />
-                                </div>
-                                <div className="form-group">
-                                    <label>E-posta</label>
-                                    <input type="email" className="form-input" placeholder="eposta@adresiniz.com"
-                                        value={authEmail} onChange={e => setAuthEmail(e.target.value)} required autoComplete="off" />
-                                </div>
-                                <div className="form-group">
-                                    <label>Şifre</label>
-                                    <input type="password" className="form-input" placeholder="En az 6 karakter"
-                                        value={authPassword} onChange={e => setAuthPassword(e.target.value)} required autoComplete="new-password" />
-                                </div>
-                                <div className="form-group">
-                                    <label>Şifreyi Onayla</label>
-                                    <input type="password" className="form-input" placeholder="••••••••"
-                                        value={authConfirmPassword} onChange={e => setAuthConfirmPassword(e.target.value)} required autoComplete="new-password" />
-                                </div>
-                                {settings?.turnstile_site_key && process.env.NEXT_PUBLIC_DISABLE_TURNSTILE !== '1' && (
-                                    <TurnstileWidget
-                                        siteKey={settings.turnstile_site_key}
-                                        onVerify={(token) => setAuthTurnstileToken(token || '')}
-                                        onError={() => setAuthError('Doğrulama hatası. Lütfen sayfayı yenileyin.')}
-                                    />
-                                )}
-                                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 8 }} disabled={isFormSubmitting || (settings?.turnstile_site_key && !authTurnstileToken && process.env.NEXT_PUBLIC_DISABLE_TURNSTILE !== '1')}>
-                                    {isFormSubmitting ? 'Hesap oluşturuluyor...' : 'Hesap Oluştur'}
-                                </button>
-                                <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 16 }}>
-                                    Zaten hesabınız var mı?{' '}
-                                    <button type="button" style={{ background: 'none', border: 'none', color: 'var(--accent-light)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, padding: 0 }}
-                                        onClick={() => { setAuthModal('login'); setAuthError(''); setAuthTurnstileToken(''); }}>
-                                        Giriş Yap
-                                    </button>
-                                </p>
-                            </form>
-                        )}
-                    </div>
-                </div>,
-                document.body
+            {/* Auth Modal */}
+            {authMounted && (
+                <NavbarAuthModal
+                    isOpen={Boolean(authModal)}
+                    authModal={authModal}
+                    setAuthModal={setAuthModal}
+                    onClose={closeAuthModal}
+                    authError={authError}
+                    setAuthError={setAuthError}
+                    authEmail={authEmail}
+                    setAuthEmail={setAuthEmail}
+                    authPassword={authPassword}
+                    setAuthPassword={setAuthPassword}
+                    authConfirmPassword={authConfirmPassword}
+                    setAuthConfirmPassword={setAuthConfirmPassword}
+                    authUsername={authUsername}
+                    setAuthUsername={setAuthUsername}
+                    authTurnstileToken={authTurnstileToken}
+                    setAuthTurnstileToken={setAuthTurnstileToken}
+                    isFormSubmitting={isFormSubmitting}
+                    handleAuthLogin={handleAuthLogin}
+                    handleAuthRegister={handleAuthRegister}
+                    settings={settings}
+                />
             )}
         </>
     );

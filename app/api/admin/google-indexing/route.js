@@ -1,33 +1,39 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
+import { getDb } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 import { createRateLimiter } from '@/lib/ratelimit';
+import { encryptData } from '@/lib/security/encryption';
+import { getStoredGoogleKey, notifyGoogleIndexingWithDetail } from '@/lib/googleIndexing';
+import { isSameOrigin } from '@/lib/security/sameOrigin';
+
 const adminLimiter = createRateLimiter(100, 60000);
+const LEGACY_KEY_PATH = path.join(process.cwd(), 'google-indexing-key.json');
 
-
-const KEY_PATH = path.join(process.cwd(), 'google-indexing-key.json');
+function cleanupLegacyFile() {
+    try {
+        if (fs.existsSync(LEGACY_KEY_PATH)) {
+            fs.unlinkSync(LEGACY_KEY_PATH);
+        }
+    } catch {}
+}
 
 export async function GET(request) {
     { const __rl = await adminLimiter(request); if (!__rl.success) return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429, headers: { 'Retry-After': String(__rl.retryAfter) } }); }
 
     try {
         await requireAdmin(request);
-        const exists = fs.existsSync(KEY_PATH);
-        if (!exists) {
-            return NextResponse.json({ exists: false, clientEmail: null });
+        const key = await getStoredGoogleKey();
+        if (!key) {
+            return NextResponse.json({ exists: false, clientEmail: null, projectId: null });
         }
-        try {
-            const key = JSON.parse(fs.readFileSync(KEY_PATH, 'utf8'));
-            return NextResponse.json({
-                exists: true,
-                clientEmail: key.client_email || null,
-                projectId: key.project_id || null,
-            });
-        } catch {
-            return NextResponse.json({ exists: true, clientEmail: null, parseError: true });
-        }
+        return NextResponse.json({
+            exists: true,
+            clientEmail: key.client_email || null,
+            projectId: key.project_id || null,
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
     }
@@ -35,6 +41,10 @@ export async function GET(request) {
 
 export async function POST(request) {
     { const __rl = await adminLimiter(request); if (!__rl.success) return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429, headers: { 'Retry-After': String(__rl.retryAfter) } }); }
+
+    if (!isSameOrigin(request)) {
+        return NextResponse.json({ error: 'Geçersiz istek kaynağı (CSRF)' }, { status: 403 });
+    }
 
     try {
         await requireAdmin(request);
@@ -56,27 +66,35 @@ export async function POST(request) {
             if (!parsed.client_email || !parsed.private_key) {
                 return NextResponse.json({ error: 'Geçersiz servis hesabı anahtarı: client_email veya private_key eksik' }, { status: 400 });
             }
-            fs.writeFileSync(KEY_PATH, text, 'utf8');
+
+            // Anahtarı asla dosya sistemine yazmıyoruz. AES-256-GCM ile şifreleyip app_settings'e kaydediyoruz.
+            const encryptedValue = encryptData(text);
+            const db = await getDb();
+            await db.prepare("INSERT OR REPLACE INTO app_settings (setting_key, setting_value) VALUES ('google_indexing_key', ?)").run(encryptedValue);
+            
+            // Disk üzerinde eski dosya kalmışsa temizle
+            cleanupLegacyFile();
+
             return NextResponse.json({
                 success: true,
                 clientEmail: parsed.client_email,
                 projectId: parsed.project_id || null,
-                message: 'Google Indexing API anahtarı başarıyla yüklendi',
+                message: 'Google Indexing API anahtarı güvenli şekilde şifrelenerek veritabanına kaydedildi',
             });
         }
 
         if (action === 'delete-key') {
-            if (fs.existsSync(KEY_PATH)) {
-                fs.unlinkSync(KEY_PATH);
-            }
+            const db = await getDb();
+            await db.prepare("DELETE FROM app_settings WHERE setting_key = 'google_indexing_key'").run();
+            cleanupLegacyFile();
             return NextResponse.json({ success: true, message: 'Anahtar silindi' });
         }
 
         if (action === 'test-indexing') {
-            if (!fs.existsSync(KEY_PATH)) {
-                return NextResponse.json({ error: 'google-indexing-key.json bulunamadı. Lütfen önce anahtarı yükleyin.' }, { status: 400 });
+            const key = await getStoredGoogleKey();
+            if (!key) {
+                return NextResponse.json({ error: 'Google Indexing anahtarı bulunamadı. Lütfen önce anahtarı yükleyin.' }, { status: 400 });
             }
-            const { notifyGoogleIndexingWithDetail } = await import('@/lib/googleIndexing');
             const testUrl = formData.get('url') || (process.env.NEXT_PUBLIC_BASE_URL || 'https://asterianewdayv3.vercel.app') + '/';
             const result = await notifyGoogleIndexingWithDetail(testUrl);
             if (result.success) {
@@ -96,11 +114,15 @@ export async function POST(request) {
 export async function DELETE(request) {
     { const __rl = await adminLimiter(request); if (!__rl.success) return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429, headers: { 'Retry-After': String(__rl.retryAfter) } }); }
 
+    if (!isSameOrigin(request)) {
+        return NextResponse.json({ error: 'Geçersiz istek kaynağı (CSRF)' }, { status: 403 });
+    }
+
     try {
         await requireAdmin(request);
-        if (fs.existsSync(KEY_PATH)) {
-            fs.unlinkSync(KEY_PATH);
-        }
+        const db = await getDb();
+        await db.prepare("DELETE FROM app_settings WHERE setting_key = 'google_indexing_key'").run();
+        cleanupLegacyFile();
         return NextResponse.json({ success: true, message: 'Anahtar silindi' });
     } catch (error) {
         return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 401 });
